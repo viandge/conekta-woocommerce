@@ -12,7 +12,7 @@ Current version features:
 
 * Uses Conekta.js      - No PCI Compliance Issues ( Requires an SSL Certificate)
 * Credit and Debit Card implemented
-* Cash payments implemented
+* Oxxo payments implemented
 
 ![alt tag](https://raw.github.com/cristinarandall/conekta-woocommerce/master/readme_files/form.png)
 
@@ -29,7 +29,7 @@ This plugin has been tested on Wordpress 3.5.2  WooCommerce 2.0.13
 Installation
 -----------
 
-* Clone the module using git clone --recursive git@github.com:cristinarandall/conekta-woocommerce.git
+* Clone the module using git clone --recursive git@github.com:conekta/conekta-woocommerce.git
 * Upload the plugin zip file in Plugins > Add New and then click "Install Now"
 * Once installed, activate the plugin.
 * Add your API keys in Woocommerce > Settings > Checkout from your Conekta account (admin.conekta.io) in https://admin.conekta.io#developers.keys
