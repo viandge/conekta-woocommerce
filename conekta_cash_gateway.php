@@ -184,8 +184,7 @@
                                                                       "type"=>"oxxo"                        
                                                                       ),
 			                               "details"=>$details
-                                                       ));
-            
+                                                       ));           
                 $this->transactionId = $charge->id;
                 update_post_meta( $this->order->id, 'conekta-id', $charge->id );
                 update_post_meta( $this->order->id, 'conekta-creado', $charge->created_at );
@@ -196,8 +195,14 @@
                 
             } catch(Conekta_Error $e) {
                 $description = $e->message_to_purchaser;
-                error_log('Gateway Error:' . $description . "\n");
-                $woocommerce->add_error(__('Payment error:', 'woothemes') . $description);
+
+                global $wp_version;
+                if (version_compare($wp_version, '4.1', '>=')) {
+                        wc_add_notice(__('Error: ', 'woothemes') . $description , $notice_type = 'error');
+                } else {
+                        error_log('Gateway Error:' . $description . "\n");
+                        $woocommerce->add_error(__('Error: ', 'woothemes') . $description);
+                }
                 return false;
             }
         }

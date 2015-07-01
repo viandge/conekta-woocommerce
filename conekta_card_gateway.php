@@ -12,35 +12,37 @@
     {
         protected $GATEWAY_NAME               = "WC_Conekta_Card_Gateway";
         protected $usesandboxapi              = true;
+        protected $enablemeses                = false;
         protected $order                      = null;
         protected $transactionId              = null;
         protected $transactionErrorMessage    = null;
-        protected $conektaTestApiKey           = '';
-        protected $conektaLiveApiKey           = '';
+        protected $conektaTestApiKey          = '';
+        protected $conektaLiveApiKey          = '';
         protected $publishable_key            = '';
         
         public function __construct()
         {
             $this->id              = 'ConektaCard';
-            $this->has_fields      = true;            
+            $this->has_fields      = true;
             $this->init_form_fields();
             $this->init_settings();
             $this->title              = $this->settings['title'];
             $this->description        = '';
             $this->icon 		      = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/credits.png';
             $this->usesandboxapi      = strcmp($this->settings['debug'], 'yes') == 0;
-            $this->testApiKey 		  = $this->settings['test_api_key'  ];
-            $this->liveApiKey 		  = $this->settings['live_api_key'  ];
-            $this->testPublishableKey = $this->settings['test_publishable_key'  ];
-            $this->livePublishableKey = $this->settings['live_publishable_key'  ];
+            $this->enablemeses = strcmp($this->settings['meses'], 'yes') == 0;
+            $this->testApiKey 		  = $this->settings['test_api_key'];
+            $this->liveApiKey 		  = $this->settings['live_api_key'];
+            $this->testPublishableKey = $this->settings['test_publishable_key'];
+            $this->livePublishableKey = $this->settings['live_publishable_key'];
             $this->useUniquePaymentProfile = strcmp($this->settings['enable_unique_profile'], 'yes') == 0;
             $this->publishable_key    = $this->usesandboxapi ? $this->testPublishableKey : $this->livePublishableKey;
             $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
             add_action('admin_notices'                              , array(&$this, 'perform_ssl_check'    ));
-            wp_enqueue_script('the_conekta_js', 'https://conektaapi.s3.amazonaws.com/v0.3.2/js/conekta.js' );
-        }
-       
+ 
+        }        
+        
         /**
         * Checks to see if SSL is configured and if plugin is configured in production mode 
         * Forces use of SSL if not in testing 
@@ -61,6 +63,12 @@
                                                           'label'       => __('Enable Credit Card Payment', 'woothemes'),
                                                           'default'     => 'yes'
                                                           ),
+                                       'meses' => array(
+                                                        'type'        => 'checkbox',
+                                                        'title'       => __('Meses sin Intereses', 'woothemes'),
+                                                        'label'       => __('Enable Meses sin Intereses', 'woothemes'),
+                                                        'default'     => 'no'
+                                                        ),
                                        'debug' => array(
                                                         'type'        => 'checkbox',
                                                         'title'       => __('Testing', 'woothemes'),
@@ -98,12 +106,6 @@
                                                                      'title'       => __('Alternate Image to display on checkout, use fullly qualified url, served via https', 'woothemes'),
                                                                      'default'     => __('', 'woothemes')
                                                                      ),
-                                       /**'enable_unique_profile' => array(
-                                                                        'type'        => 'checkbox',
-                                                                        'title'       => __('Enable Payment Profile Creation', 'woothemes'),
-                                                                        'label'       => __('Use this to always create a Payment Profile in Conekta (always creates new profile, regardless of logged in user), and associate the charge with the profile. This allows you more easily identify order, credit, or even make an additional charge (from Conekta admin) at a later date.', 'woothemes'),
-                                                                        'default'     => 'no'
-                                                                        ),*/
                                        
                                        
                                        );
@@ -138,45 +140,35 @@
                 $line_items = array();
                 $items = $this->order->get_items();
                 $line_items = build_line_items($items);
-                $details = build_details($data,$line_items);
+                $details = build_details($data, $line_items);
                 
-                if($this->useUniquePaymentProfile)
-                {
-                    // Create the user as a customer on Conekta servers
-                    $customer = Conekta_Customer::create(array(
-                                                               "email" => $data['card']['email'],
-                                                               "description" => $data['card']['name'],
-                                                               "name" => $data['card']['name'],
-                                                               "cards"  => array($data['token'])
-                                                               ));
-                    $charge = Conekta_Charge::create(array(
-                                                           "amount"      => $data['amount'],
-                                                           "currency"    => $data['currency'],
-                                                           "description" => "Compra con orden # ". $this->order->id,
-                                                           "reference_id" => $this->order->id,
-                                                           "card"    => $customer->id,
-                                                           "details"     => $details,
-                                                           ));
-                } else {
-                    
-                    $charge = Conekta_Charge::create(array(
-                                                           "amount"      => $data['amount'],
-                                                           "currency"    => $data['currency'],
-                                                           "card"        => $data['token'],
-                                                           "reference_id" => $this->order->id,
-                                                           "description" => "Compra con orden # ". $this->order->id,
-                                                           "details"     => $details,
-                                                           ));
-                }
+                $charge = Conekta_Charge::create(array(
+                            "amount"      => $data['amount'],
+                            "currency"    => $data['currency'],
+                            "monthly_installments" => $data['monthly_installments'] > 1 ? $data['monthly_installments'] : null,
+                            "card"        => $data['token'],
+                            "reference_id" => $this->order->id,
+                            "description" => "Compra con orden # ". $this->order->id,
+                            "details"     => $details,
+                        ));
+                
                 $this->transactionId = $charge->id;
-                
+                if ($data['monthly_installments'] > 1) {
+                update_post_meta( $this->order->id, 'meses-sin-intereses', $data['monthly_installments']);
+                }
                 update_post_meta( $this->order->id, 'transaction_id', $this->transactionId);
                 return true;
                 
             } catch(Conekta_Error $e) {
                 $description = $e->message_to_purchaser;
-                error_log('Gateway Error:' . $description . "\n");
-                $woocommerce->add_error(__('Error: ', 'woothemes') . $description);
+
+        		global $wp_version;
+        		if (version_compare($wp_version, '4.1', '>=')) {
+        			wc_add_notice(__('Error: ', 'woothemes') . $description , $notice_type = 'error');
+        		} else {
+               		error_log('Gateway Error:' . $description . "\n");
+                	$woocommerce->add_error(__('Error: ', 'woothemes') . $description);
+        		}
                 return false;
             }
         }

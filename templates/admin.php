@@ -8,10 +8,10 @@
 ?>
 
 <h3>
-    <?php _e('Credit Card Payment', 'woothemes'); ?>
+    <?php _e('Credit and Debit Card Payment', 'woothemes'); ?>
 </h3>
 
-<p><?php _e('Allows Credit Card payments.', 'woothemes'); ?></p>
+<p><?php _e('Allows Credit and Debit Card payments.', 'woothemes'); ?></p>
 
 <table class="form-table">
     <?php $this->generate_settings_html(); ?>

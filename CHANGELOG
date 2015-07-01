@@ -8,3 +8,8 @@
 * Offline payments
 * Barcode sent in mail and displayed in order the confirmation page
 * Order Status changed dynamically once webhook is added in Conekta.io Account 
+=== 0.2.0 2015-05-11
+* Added option for difered payments for 3, 6, and 12 months
+* Enable or disable difered payments from the admin
+=== 0.2.1 2015-06-15
+* Added additional parameters required for more robust anti-fraude service for card payments

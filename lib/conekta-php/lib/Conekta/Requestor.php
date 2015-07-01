@@ -78,6 +78,7 @@ class Conekta_Requestor
 		if ($response_code != 200) {
 			Conekta_Error::errorHandler($response, $response_code);
 		}
+
 		return json_decode($response, true);
 	}
 	

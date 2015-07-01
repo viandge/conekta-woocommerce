@@ -39,7 +39,6 @@
   <label>Año de expiración <span class="required">*</span></label>
 <select id="card_expiration_yr" data-conekta="card[exp_year]" class="year" autocomplete="off">
           <option selected="selected" value=""> Año</option>
-          <option value="2014">2014</option>
           <option value="2015">2015</option>
           <option value="2016">2016</option>
           <option value="2017">2017</option>
@@ -60,70 +59,85 @@
 </p>
 <div class="clear"></div>
 
+<?php if ($this->enablemeses): ?>
+
+<p class="form-row form-row-first">
+<label> Tipo de Pago <span class="required">*</span></label>
+<select id="monthly_installments" name="monthly_installments" autocomplete="off">
+<option selected="selected" value="1"> Pago único</option>
+<option value="3"> 3 meses </option>
+<option value="6"> 6 meses </option>
+<option value="12"> 12 meses </option>
+</select>
+</p>
+
+<?php endif; ?>
+
+
+<div class="clear"></div>
+
+
+
+
 <script>
 
-  var initConektaCheckout = function(){
+  var initConektaCheckout = function() {
     jQuery(function($) {
-    var $form = $('form.checkout,form#order_review');
+      var $form = $('form.checkout,form#order_review');
 
-           var conektaErrorResponseHandler = function(response) {
-           $form.find('.payment-errors').text(response.message);
-           $form.unblock();
-             };
+      var conektaErrorResponseHandler = function(response) {
+        $form.find('.payment-errors').text(response.message);
+        $form.unblock();
+      };
            
-    var conektaSuccessResponseHandler = function(response) {
-      $form.append($('<input type="hidden" name="conektaToken" />').val(response.id));
-      $form.submit();
+      var conektaSuccessResponseHandler = function(response) {
+        $form.append($('<input type="hidden" name="conektaToken" />').val(response.id));
+        $form.submit();
+      };
 
+      $('body').on('click', '#place_order,form#order_review input:submit', function() {
+        if (jQuery('.payment_methods input:checked').val() !== 'ConektaCard') {
+          return true;
+        }
+
+        Conekta.setPublishableKey($('#conekta_pub_key').data('publishablekey'));
+        Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
+        return false;
+      });
+
+      $('body').on('click', '#place_order,form.checkout input:submit', function(){
+        if(jQuery('.payment_methods input:checked').val() !== 'ConektaCard') {
+          return true;
+        }
+        $('form.checkout').find('[name=conektaToken]').remove();
+      });
+
+      $('form.checkout').bind('#place_order,checkout_place_order_ConektaCard', function(e){
+        if($('input[name=payment_method]:checked').val() != 'ConektaCard') {
+          return true;
+        }
+
+        $form.find('.payment-errors').html('');
+        $form.block({message: null,overlayCSS: {background: "#fff url(" + woocommerce_params.ajax_loader_url + ") no-repeat center",backgroundSize: "16px 16px",opacity: .6}});
+
+        if ($form.find('[name=conektaToken]').length)
+          return true;
+
+        Conekta.setPublishableKey($('#conekta_pub_key').data('publishablekey'));
+        Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
+        return false;
+      });
+    });
   };
 
-    $('body').on('click', '#place_order,form#order_review input:submit', function(){
-      if(jQuery('.payment_methods input:checked').val() !== 'ConektaCard')
-      {
-        return true;
-      }
-      Conekta.setPublishableKey($('#conekta_pub_key').data('publishablekey'));
-      Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
-      return false;
-    });
-
-
-    $('body').on('click', '#place_order,form.checkout input:submit', function(){
-      if(jQuery('.payment_methods input:checked').val() !== 'ConektaCard')
-      {
-        return true;
-      }
-      $('form.checkout').find('[name=conektaToken]').remove()
-    })
-
-    $('form.checkout').bind('#place_order,checkout_place_order_ConektaCard', function(e){
-
-      if($('input[name=payment_method]:checked').val() != 'ConektaCard'){
-          return true;
-      }
-
-      $form.find('.payment-errors').html('');
-      $form.block({message: null,overlayCSS: {background: "#fff url(" + woocommerce_params.ajax_loader_url + ") no-repeat center",backgroundSize: "16px 16px",opacity: .6}});
-
-      if( $form.find('[name=conektaToken]').length)
-        return true;
-
-      Conekta.setPublishableKey($('#conekta_pub_key').data('publishablekey'));
-      Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
-      return false;
-    });
-  });
-};
-
-if(typeof jQuery=='undefined')
-{
+  if (typeof jQuery=='undefined') {
     var headTag = document.getElementsByTagName("head")[0];
     var jqTag = document.createElement('script');
     jqTag.type = 'text/javascript';
     jqTag.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js';
     jqTag.onload = initConektaCheckout;
     headTag.appendChild(jqTag);
-} else {
-   initConektaCheckout()
-}
+  } else {
+    initConektaCheckout()
+  }
 </script>
