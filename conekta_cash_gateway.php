@@ -229,7 +229,12 @@
             else
             {
                 $this->markAsFailedPayment();
-                $woocommerce->add_error(__('Transaction Error: Could not complete the payment'), 'woothemes');
+                global $wp_version;
+                if (version_compare($wp_version, '4.1', '>=')) {
+                        wc_add_notice(__('Transaction Error: Could not complete the payment', 'woothemes'), $notice_type = 'error');
+                } else {
+                	$woocommerce->add_error(__('Transaction Error: Could not complete the payment'), 'woothemes');
+                }
             }
         }
         
