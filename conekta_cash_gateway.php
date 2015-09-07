@@ -176,15 +176,15 @@
             try {
   
                 $charge = Conekta_Charge::create(array(
-                                                       "amount"=> $data['amount'],
-                                                       "currency"=> $data['currency'],
-                                                       "reference_id" => $this->order->id,
-                                                       "description"=> "Recibo de pago para orden # ". $this->order->id,
-                                                       "cash"=> array(
-                                                                      "type"=>"oxxo"                        
-                                                                      ),
-			                               "details"=>$details
-                                                       ));           
+                            "amount"=> $data['amount'],
+                            "currency"=> $data['currency'],
+                            "reference_id" => $this->order->id,
+                            "description"=> "Recibo de pago para orden # ". $this->order->id,
+                            "cash"=> array(
+                                "type"=>"oxxo"
+                            ),
+                            "details"=>$details
+                        ));
                 $this->transactionId = $charge->id;
                 update_post_meta( $this->order->id, 'conekta-id', $charge->id );
                 update_post_meta( $this->order->id, 'conekta-creado', $charge->created_at );
