@@ -8,9 +8,9 @@
      * Url     : https://wordpress.org/plugins/conekta-woocommerce
      */
     
-    class WC_Conekta_Cash_Gateway extends WC_Payment_Gateway
+    class WC_Conekta_Spei_Gateway extends WC_Payment_Gateway
     {
-        protected $GATEWAY_NAME               = "WC_Conekta_Cash_Gateway";
+        protected $GATEWAY_NAME               = "WC_Conekta_Spei_Gateway";
         protected $usesandboxapi              = true;
         protected $order                      = null;
         protected $transactionId              = null;
@@ -21,43 +21,43 @@
         
         public function __construct()
         {
-            $this->id              = 'ConektaCash';
+            $this->id              = 'ConektaSpei';
             $this->has_fields      = true;            
             $this->init_form_fields();
             $this->init_settings();
             $this->title              = $this->settings['title'];
             $this->description        = '';
-            $this->icon 		      = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/cash.png';
+            $this->icon           = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/spei.png';
             $this->usesandboxapi      = strcmp($this->settings['debug'], 'yes') == 0;
-            $this->testApiKey 		  = $this->settings['test_api_key'  ];
-            $this->liveApiKey 		  = $this->settings['live_api_key'  ];
+            $this->testApiKey       = $this->settings['test_api_key'  ];
+            $this->liveApiKey       = $this->settings['live_api_key'  ];
             $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
             add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
-            add_action( 'woocommerce_email_before_order_table', array( $this, 'email_barcode' ) );
+            add_action( 'woocommerce_email_before_order_table', array( $this, 'email_reference' ) );
             add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'webhook_handler' ) );  
         }
 
         /**
         * Updates the status of the order.
-        * Webhook needs to be added to Conekta account tusitio.com/wc-api/WC_Conekta_Cash_Gateway
+        * Webhook needs to be added to Conekta account tusitio.com/wc-api/WC_Conekta_Spei_Gateway
         */
-	public function webhook_handler() 
-	{
-	    header('HTTP/1.1 200 OK');
-	    $body = @file_get_contents('php://input');		
-	    $event = json_decode($body);
-	    $charge = $event->data->object;
-	    $order_id = $charge->reference_id;
-	    $paid_at = date("Y-m-d", $charge->paid_at);
-	    $order = new WC_Order( $order_id );
-		if (strpos($event->type, "charge.paid") !== false) 
-		{
-			update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
-			$order->payment_complete();
-			$order->add_order_note(sprintf("Payment completed in Oxxo and notification of payment received"));
-		}
-	}
+  public function webhook_handler() 
+  {
+      header('HTTP/1.1 200 OK');
+      $body = @file_get_contents('php://input');    
+      $event = json_decode($body);
+      $charge = $event->data->object;
+      $order_id = $charge->reference_id;
+      $paid_at = date("Y-m-d", $charge->paid_at);
+      $order = new WC_Order( $order_id );
+    if (strpos($event->type, "charge.paid") !== false) 
+    {
+      update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
+      $order->payment_complete();
+      $order->add_order_note(sprintf("Payment completed in Spei and notification of payment received"));
+    }
+  }
    
         public function init_form_fields()
         {
@@ -65,7 +65,7 @@
                                        'enabled' => array(
                                                           'type'        => 'checkbox',
                                                           'title'       => __('Enable/Disable', 'woothemes'),
-                                                          'label'       => __('Enable Conekta Cash Payment', 'woothemes'),
+                                                          'label'       => __('Enable Conekta Spei Payment', 'woothemes'),
                                                           'default'     => 'yes'
                                                           ),
                                        'debug' => array(
@@ -78,7 +78,7 @@
                                                         'type'        => 'text',
                                                         'title'       => __('Title', 'woothemes'),
                                                         'description' => __('This controls the title which the user sees during checkout.', 'woothemes'),
-                                                        'default'     => __('Cash Payment', 'woothemes')
+                                                        'default'     => __('Spei Payment', 'woothemes')
                                                         ),
                                        'test_api_key' => array(
                                                                'type'        => 'password',
@@ -99,14 +99,14 @@
                                                               'title' => __( 'Description', 'woocommerce' ),
                                                               'type' => 'textarea',
                                                               'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-                                                              'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando la clave que mandaremos a tu e-mail.', 'woocommerce' ),
+                                                              'default' =>__( 'Por favor realiza el pago en el portal de tu banco utilizando los datos que te enviamos por correo.', 'woocommerce' ),
                                                               'desc_tip' => true,
                                                               ),
                                        'instructions' => array(
                                                                'title' => __( 'Instructions', 'woocommerce' ),
                                                                'type' => 'textarea',
                                                                'description' => __( 'Instructions that will be added to the thank you page and emails.', 'woocommerce' ),
-                                                               'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando la clave que mandaremos a tu e-mail.', 'woocommerce' ),
+                                                               'default' =>__( 'Por favor realiza el pago en el portal de tu banco utilizando los datos que te enviamos por correo.', 'woocommerce' ),
                                                                'desc_tip' => true,
                                                                ),
                                        );
@@ -118,8 +118,7 @@
          */
         function thankyou_page($order_id) {
             $order = new WC_Order( $order_id );
-            echo '<p><strong>'.__('Código de Barras').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" /></p>';
-            echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-barcode', true ). '</p>';
+            echo '<p><strong>'.__('Clabe').':</strong> ' . get_post_meta( $order->id, 'conekta-clabe', true ). '</p>';
         }
         
         /**
@@ -128,13 +127,12 @@
          * @access public
          * @param WC_Order $order
          */
-        function email_barcode($order) {
+        function email_reference($order) {
 
-	    	if (get_post_meta( $order->id, 'conekta-barcodeurl', true ) != null)
-        	{
-            		echo '<strong>'.__('Código Barra').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" />';
-            		echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-barcode', true ). '</p>';
-        	}
+        if (get_post_meta( $order->id, 'conekta-clabe', true ) != null)
+          {
+                echo '<p><strong>'.__('Clabe').':</strong> ' . get_post_meta( $order->id, 'conekta-clabe', true ). '</p>';
+          }
         }
         
         /**
@@ -153,12 +151,12 @@
         
         public function admin_options()
         {
-            include_once('templates/cash_admin.php');
+            include_once('templates/spei_admin.php');
         }
         
         public function payment_fields()
         {
-            include_once('templates/cash.php');
+            include_once('templates/spei.php');
         }
         
         protected function send_to_conekta()
@@ -180,8 +178,8 @@
                             "currency"=> $data['currency'],
                             "reference_id" => $this->order->id,
                             "description"=> "Recibo de pago para orden # ". $this->order->id,
-                            "cash"=> array(
-                                "type"=>"oxxo"
+                            "bank"=> array(
+                                "type"=>"spei"
                             ),
                             "details"=>$details
                         ));
@@ -189,8 +187,7 @@
                 update_post_meta( $this->order->id, 'conekta-id', $charge->id );
                 update_post_meta( $this->order->id, 'conekta-creado', $charge->created_at );
                 update_post_meta( $this->order->id, 'conekta-expira', $charge->payment_method->expiry_date );
-                update_post_meta( $this->order->id, 'conekta-barcode', $charge->payment_method->barcode );
-                update_post_meta( $this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url );
+                update_post_meta( $this->order->id, 'conekta-clabe', $charge->payment_method->receiving_account_number );
                 return true;
                 
             } catch(Conekta_Error $e) {
@@ -232,7 +229,7 @@
                 if (version_compare($wp_version, '4.1', '>=')) {
                         wc_add_notice(__('Transaction Error: Could not complete the payment', 'woothemes'), $notice_type = 'error');
                 } else {
-                	$woocommerce->add_error(__('Transaction Error: Could not complete the payment'), 'woothemes');
+                  $woocommerce->add_error(__('Transaction Error: Could not complete the payment'), 'woothemes');
                 }
             }
         }
@@ -241,7 +238,7 @@
         {
             $this->order->add_order_note(
                                          sprintf(
-                                                 "%s Cash Payment Failed : '%s'",
+                                                 "%s Spei Payment Failed : '%s'",
                                                  $this->GATEWAY_NAME,
                                                  $this->transactionErrorMessage
                                                  )
@@ -270,7 +267,7 @@
         
     }
     
-    function conekta_cash_order_status_completed($order_id = null)
+    function conekta_spei_order_status_completed($order_id = null)
     {
         global $woocommerce;
         if (!$order_id)
@@ -286,11 +283,11 @@
         }
     }
    
-    function conektacheckout_add_cash_gateway($methods)
+    function conektacheckout_add_spei_gateway($methods)
     {
-        array_push($methods, 'WC_Conekta_Cash_Gateway');
+        array_push($methods, 'WC_Conekta_Spei_Gateway');
         return $methods;
     }
     
-    add_filter('woocommerce_payment_gateways',                      'conektacheckout_add_cash_gateway');
-    add_action('woocommerce_order_status_processing_to_completed',  'conekta_cash_order_status_completed' );
+    add_filter('woocommerce_payment_gateways',                      'conektacheckout_add_spei_gateway');
+    add_action('woocommerce_order_status_processing_to_completed',  'conekta_spei_order_status_completed' );
