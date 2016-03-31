@@ -35,7 +35,7 @@
             $this->liveApiKey 		  = $this->settings['live_api_key'];
             $this->testPublishableKey = $this->settings['test_publishable_key'];
             $this->livePublishableKey = $this->settings['live_publishable_key'];
-            $this->useUniquePaymentProfile = strcmp($this->settings['enable_unique_profile'], 'yes') == 0;
+            //$this->useUniquePaymentProfile = strcmp($this->settings['enable_unique_profile'], 'yes') == 0;
             $this->publishable_key    = $this->usesandboxapi ? $this->testPublishableKey : $this->livePublishableKey;
             $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
@@ -82,7 +82,7 @@
                                                         'default'     => __('Credit Card Payment', 'woothemes')
                                                         ),
                                        'test_api_key' => array(
-                                                               'type'        => 'text',
+                                                               'type'        => 'password',
                                                                'title'       => __('Conekta API Test Private key', 'woothemes'),
                                                                'default'     => __('', 'woothemes')
                                                                ),
@@ -92,7 +92,7 @@
                                                                        'default'     => __('', 'woothemes')
                                                                        ),
                                        'live_api_key' => array(
-                                                               'type'        => 'text',
+                                                               'type'        => 'password',
                                                                'title'       => __('Conekta API Live Private key', 'woothemes'),
                                                                'default'     => __('', 'woothemes')
                                                                ),

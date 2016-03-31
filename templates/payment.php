@@ -86,7 +86,7 @@
       var $form = $('form.checkout,form#order_review');
 
       var conektaErrorResponseHandler = function(response) {
-        $form.find('.payment-errors').text(response.message);
+        $form.find('.payment-errors').text(response.message_to_purchaser);
         $form.unblock();
       };
            

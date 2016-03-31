@@ -81,12 +81,12 @@
                                                         'default'     => __('Cash Payment', 'woothemes')
                                                         ),
                                        'test_api_key' => array(
-                                                               'type'        => 'text',
+                                                               'type'        => 'password',
                                                                'title'       => __('Conekta API Test Private key', 'woothemes'),
                                                                'default'     => __('', 'woothemes')
                                                                ),
                                        'live_api_key' => array(
-                                                               'type'        => 'text',
+                                                               'type'        => 'password',
                                                                'title'       => __('Conekta API Live Private key', 'woothemes'),
                                                                'default'     => __('', 'woothemes')
                                                                ),
@@ -214,12 +214,11 @@
             if ($this->send_to_conekta())
             {
                 // Mark as on-hold (we're awaiting the notification of payment)
-             $this->order->update_status('on-hold', __( 'Awaiting the conekta OXOO payment', 'woocommerce' ));
+                $this->order->update_status('on-hold', __( 'Awaiting the conekta OXOO payment', 'woocommerce' ));
                 
                 // Remove cart
                 $woocommerce->cart->empty_cart();
                 unset($_SESSION['order_awaiting_payment']);
-                
                 $result = array(
                                 'result' => 'success',
                                 'redirect' => $this->get_return_url($this->order)

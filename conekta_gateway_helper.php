@@ -56,8 +56,8 @@
                 "state" => $data['card']['address_state']
             ),
             "shipment"  => array(
-                "carrier"=> $data['shipping_carrier'],
-                "service"=> $data['shipping_method'],
+                "carrier"=> (empty($data['shipping_carrier']) ? "default" : $data['shipping_carrier']),
+                "service"=> (empty($data['shipping_method']) ? "default" : $data['shipping_method']),
                 "price" => $data['shipping_cost'],
                 "address"=> array(
                     "street1" => $data['card']['shipping_address_line1'],
