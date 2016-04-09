@@ -35,6 +35,7 @@
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
             add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
             add_action( 'woocommerce_email_before_order_table', array( $this, 'email_reference' ) );
+            add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ) );
             add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'webhook_handler' ) );  
         }
 
@@ -144,8 +145,9 @@
          * @param bool $plain_text
          */
         public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-            if ( $this->instructions && 'on-hold' === $order->status ) {
-                echo wpautop( wptexturize( $this->instructions ) ) . PHP_EOL;
+            $instructions = $this->form_fields['instructions'];
+            if ( $instructions && 'on-hold' === $order->status ) {
+                echo wpautop( wptexturize( $instructions['default'] ) ) . PHP_EOL;
             }
         }
         
