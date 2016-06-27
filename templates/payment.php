@@ -97,7 +97,7 @@
       };
 
       $('body').on('click', '#place_order,form#order_review input:submit', function() {
-        if (jQuery('.payment_methods input:checked').val() !== 'ConektaCard') {
+        if (jQuery('.payment_methods input:checked').val() !== 'conektacard') {
           return true;
         }
 
@@ -107,14 +107,14 @@
       });
 
       $('body').on('click', '#place_order,form.checkout input:submit', function(){
-        if(jQuery('.payment_methods input:checked').val() !== 'ConektaCard') {
+        if(jQuery('.payment_methods input:checked').val() !== 'conektacard') {
           return true;
         }
         $('form.checkout').find('[name=conektaToken]').remove();
       });
 
       $('form.checkout').bind('#place_order,checkout_place_order_ConektaCard', function(e){
-        if($('input[name=payment_method]:checked').val() != 'ConektaCard') {
+        if($('input[name=payment_method]:checked').val() != 'conektacard') {
           return true;
         }
 
