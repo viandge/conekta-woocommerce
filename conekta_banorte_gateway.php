@@ -22,7 +22,8 @@
         
         public function __construct()
         {
-            $this->id              = 'ConektaBanorte';
+            $this->id              = 'conektabanorte';
+            $this->method_title       = __( 'Conekta Banorte', 'woocommerce' );
             $this->has_fields      = true;            
             $this->init_form_fields();
             $this->init_settings();

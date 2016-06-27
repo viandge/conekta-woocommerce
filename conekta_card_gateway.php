@@ -22,7 +22,8 @@
         
         public function __construct()
         {
-            $this->id              = 'ConektaCard';
+            $this->id              = 'conektacard';
+            $this->method_title       = __( 'Conekta Card', 'woocommerce' );
             $this->has_fields      = true;
             $this->init_form_fields();
             $this->init_settings();
