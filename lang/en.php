@@ -8,7 +8,7 @@
 			"12" => "12 months",
 		),
 		"card_expiration" => array(
-			"1" => "01 - January",
+			"1" => "01 - January", 
 			"2" => "02 - February",
 			"3" => "03 - March",
 			"4" => "04 - April",
