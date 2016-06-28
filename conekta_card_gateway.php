@@ -19,6 +19,8 @@
         protected $conektaTestApiKey          = '';
         protected $conektaLiveApiKey          = '';
         protected $publishable_key            = '';
+
+        protected $lang_options               = array();
         
         public function __construct()
         {
@@ -39,6 +41,9 @@
             //$this->useUniquePaymentProfile = strcmp($this->settings['enable_unique_profile'], 'yes') == 0;
             $this->publishable_key    = $this->usesandboxapi ? $this->testPublishableKey : $this->livePublishableKey;
             $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
+
+            $this->lang_options = parent::set_locale_options()->get_lang_options();
+
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
             add_action('admin_notices'                              , array(&$this, 'perform_ssl_check'    ));
  
