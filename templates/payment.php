@@ -5,7 +5,11 @@
  * Url     : https://www.conekta.io/es/docs/plugins/woocommerce
  */
 ?>
+<<<<<<< HEAD
 <div id="conekta_pub_key" class="hidden" style="display:none;" data-publishablekey="<?php echo $this->publishable_key; ?>"> </div>
+=======
+<div id="conekta_pub_key" class="hidden" style="display:none" data-publishablekey="<?=$this->publishable_key ?>"> </div>
+>>>>>>> master
 <div class="clear"></div>
 <span style="width: 100%; float: left; color: red;" class='payment-errors required'></span>
 <p class="form-row form-row-first">
@@ -21,9 +25,24 @@
   <label>Mes de expiración <span class="required">*</span></label>
 <select id="card_expiration" data-conekta="card[exp_month]" class="month" autocomplete="off">
          <option selected="selected" value=""> Mes</option>
+<<<<<<< HEAD
          <?php foreach($this->lang_options["card_expiration"] as $month => $description): ?>
           <option value="<?php echo $month; ?>"><?php echo $description; ?></option>
          <?php endforeach; ?>
+=======
+         <option value="1">01 - January</option>
+         <option value="2">02 - February</option>
+         <option value="3">03 - March</option>
+         <option value="4">04 - April</option>
+         <option value="5">05 - May</option>
+         <option value="6">06 - June</option>
+         <option value="7">07 - July</option>
+         <option value="8">08 - August</option>
+         <option value="9">09 - September</option>
+         <option value="10">10 - October</option>
+         <option value="11">11 - November</option>
+         <option value="12">12 - December</option>
+>>>>>>> master
        </select>
 </p>
 <p class="form-row form-row-last">
@@ -56,9 +75,16 @@
 <label> Tipo de Pago <span class="required">*</span></label>
 <select id="monthly_installments" name="monthly_installments" autocomplete="off">
 <option selected="selected" value="1"> Pago único</option>
+<<<<<<< HEAD
 <?php foreach($this->lang_options["monthly_installments"] AS $months => $description): ?>
   <option value="<?php echo $months; ?>"><?php echo $description; ?></option>
 <?php endforeach; ?>
+=======
+<option value="3"> 3 meses </option>
+<option value="6"> 6 meses </option>
+<option value="9"> 9 meses </option>
+<option value="12"> 12 meses </option>
+>>>>>>> master
 </select>
 </p>
 
@@ -67,7 +93,15 @@
 
 <div class="clear"></div>
 
+<<<<<<< HEAD
 <script>
+=======
+
+
+
+<script>
+
+>>>>>>> master
   var initConektaCheckout = function() {
     jQuery(function($) {
       var $form = $('form.checkout,form#order_review');
@@ -82,16 +116,25 @@
         $form.submit();
       };
 
+<<<<<<< HEAD
       jQuery('body').on('click', '#place_order,form#order_review input:submit', function() {
+=======
+      $('body').on('click', '#place_order,form#order_review input:submit', function() {
+>>>>>>> master
         if (jQuery('.payment_methods input:checked').val() !== 'conektacard') {
           return true;
         }
 
+<<<<<<< HEAD
         Conekta.setPublishableKey(jQuery('#conekta_pub_key').data('publishablekey'));
+=======
+        Conekta.setPublishableKey($('#conekta_pub_key').data('publishablekey'));
+>>>>>>> master
         Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
         return false;
       });
 
+<<<<<<< HEAD
       jQuery('body').on('click', '#place_order,form.checkout input:submit', function(){
         if(jQuery('.payment_methods input:checked').val() !== 'conektacard') {
           return true;
@@ -101,16 +144,36 @@
 
       jQuery('form.checkout').bind('#place_order,checkout_place_order_ConektaCard', function(e){
         if(jQuery('input[name=payment_method]:checked').val() != 'conektacard') {
+=======
+      $('body').on('click', '#place_order,form.checkout input:submit', function(){
+        if(jQuery('.payment_methods input:checked').val() !== 'conektacard') {
+          return true;
+        }
+        $('form.checkout').find('[name=conektaToken]').remove();
+      });
+
+      $('form.checkout').bind('#place_order,checkout_place_order_ConektaCard', function(e){
+        if($('input[name=payment_method]:checked').val() != 'conektacard') {
+>>>>>>> master
           return true;
         }
 
         $form.find('.payment-errors').html('');
+<<<<<<< HEAD
         $form.block({message: null,overlayCSS: {background: "#fff url(" + woocommerce_params.ajax_loader_url + ") no-repeat center", backgroundSize: "16px 16px",opacity: .6}});
 
         if ($form.find('[name="conektaToken"]').length)
           return true;
 
         Conekta.setPublishableKey(jQuery('#conekta_pub_key').data('publishablekey'));
+=======
+        $form.block({message: null,overlayCSS: {background: "#fff url(" + woocommerce_params.ajax_loader_url + ") no-repeat center",backgroundSize: "16px 16px",opacity: .6}});
+
+        if ($form.find('[name=conektaToken]').length)
+          return true;
+
+        Conekta.setPublishableKey($('#conekta_pub_key').data('publishablekey'));
+>>>>>>> master
         Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
         return false;
       });

@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 <?php
     if (!class_exists('Conekta')) {
         require_once("lib/conekta-php/lib/Conekta.php");
@@ -8,7 +12,11 @@
      * Url     : https://wordpress.org/plugins/conekta-woocommerce
      */
     
+<<<<<<< HEAD
     class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
+=======
+    class WC_Conekta_Banorte_Gateway extends WC_Payment_Gateway
+>>>>>>> master
     {
         protected $GATEWAY_NAME               = "WC_Conekta_Banorte_Gateway";
         protected $usesandboxapi              = true;
