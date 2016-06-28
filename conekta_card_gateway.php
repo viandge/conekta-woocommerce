@@ -7,12 +7,7 @@
      * Author  : Cristina Randall
      * Url     : https://wordpress.org/plugins/conekta-woocommerce
      */
-   
-<<<<<<< HEAD
     class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
-=======
-    class WC_Conekta_Card_Gateway extends WC_Payment_Gateway
->>>>>>> master
     {
         protected $GATEWAY_NAME               = "WC_Conekta_Card_Gateway";
         protected $usesandboxapi              = true;
@@ -23,11 +18,8 @@
         protected $conektaTestApiKey          = '';
         protected $conektaLiveApiKey          = '';
         protected $publishable_key            = '';
-<<<<<<< HEAD
 
         protected $lang_options               = array();
-=======
->>>>>>> master
         
         public function __construct()
         {
@@ -48,15 +40,12 @@
             //$this->useUniquePaymentProfile = strcmp($this->settings['enable_unique_profile'], 'yes') == 0;
             $this->publishable_key    = $this->usesandboxapi ? $this->testPublishableKey : $this->livePublishableKey;
             $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
-<<<<<<< HEAD
 
             $this->lang_options = parent::set_locale_options()->get_lang_options();
 
-=======
->>>>>>> master
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
             add_action('admin_notices'                              , array(&$this, 'perform_ssl_check'    ));
- 
+
         }        
         
         /**
