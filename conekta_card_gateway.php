@@ -153,7 +153,7 @@
                             "monthly_installments" => $data['monthly_installments'] > 1 ? $data['monthly_installments'] : null,
                             "card"        => $data['token'],
                             "reference_id" => $this->order->id,
-                            "description" => "Compra con orden # ". $this->order->id,
+                            "description" => "Compra con orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
                             "details"     => $details,
                         ));
                 

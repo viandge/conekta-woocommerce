@@ -183,7 +183,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                             "amount"=> $data['amount'],
                             "currency"=> $data['currency'],
                             "reference_id" => $this->order->id,
-                            "description"=> "Recibo de pago para orden # ". $this->order->id,
+                            "description"=> "Recibo de pago para orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
                             "cash"=> array(
                                 "type"=>"oxxo"
                             ),
