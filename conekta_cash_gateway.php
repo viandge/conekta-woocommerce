@@ -7,9 +7,9 @@
      * Author  : Conekta.io
      * Url     : https://wordpress.org/plugins/conekta-woocommerce
      */
-    
-    class WC_Conekta_Cash_Gateway extends WC_Payment_Gateway
-    {
+
+class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
+{
         protected $GATEWAY_NAME               = "WC_Conekta_Cash_Gateway";
         protected $usesandboxapi              = true;
         protected $order                      = null;
@@ -53,11 +53,14 @@
         $order_id = $charge->reference_id;
         $paid_at = date("Y-m-d", $charge->paid_at);
         $order = new WC_Order( $order_id );
+
         if (strpos($event->type, "charge.paid") !== false) 
         {
             update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
             $order->payment_complete();
             $order->add_order_note(sprintf("Payment completed in Oxxo and notification of payment received"));
+
+            parent::offline_payment_notification($order_id, $charge->details->name);
         }
     }
    
@@ -183,7 +186,7 @@
                             "amount"=> $data['amount'],
                             "currency"=> $data['currency'],
                             "reference_id" => $this->order->id,
-                            "description"=> "Recibo de pago para orden # ". $this->order->id,
+                            "description"=> "Recibo de pago para orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
                             "cash"=> array(
                                 "type"=>"oxxo"
                             ),

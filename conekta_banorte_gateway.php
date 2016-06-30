@@ -1,4 +1,3 @@
-
 <?php
     if (!class_exists('Conekta')) {
         require_once("lib/conekta-php/lib/Conekta.php");
@@ -9,8 +8,8 @@
      * Url     : https://wordpress.org/plugins/conekta-woocommerce
      */
     
-    class WC_Conekta_Banorte_Gateway extends WC_Payment_Gateway
-    {
+class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
+{
         protected $GATEWAY_NAME               = "WC_Conekta_Banorte_Gateway";
         protected $usesandboxapi              = true;
         protected $order                      = null;
@@ -185,7 +184,7 @@
                             "amount"=> $data['amount'],
                             "currency"=> $data['currency'],
                             "reference_id" => $this->order->id,
-                            "description"=> "Recibo de pago para orden # ". $this->order->id,
+                            "description"=> "Recibo de pago para orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
                             "bank"=> array(
                                 "type"=>"banorte"
                             ),

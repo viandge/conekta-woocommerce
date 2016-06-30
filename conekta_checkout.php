@@ -21,6 +21,7 @@ function conekta_checkout_init_your_gateway()
     if (class_exists('WC_Payment_Gateway'))
     {
         include_once('conekta_gateway_helper.php');
+        include_once('conekta_plugin.php');
         include_once('conekta_card_gateway.php');
         include_once('conekta_cash_gateway.php');
         include_once('conekta_spei_gateway.php');
