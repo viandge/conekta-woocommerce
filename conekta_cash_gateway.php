@@ -60,7 +60,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $order->payment_complete();
             $order->add_order_note(sprintf("Payment completed in Oxxo and notification of payment received"));
 
-            parent::offline_payment_notification($order_id, (object) $event);
+            parent::offline_payment_notification($order_id, $charge->details->name);
         }
     }
    

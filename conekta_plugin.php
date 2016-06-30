@@ -41,7 +41,7 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
 		return $this->lang_messages;
 	}
 
-	public function offline_payment_notification($order_id, $transaction = null)
+	public function offline_payment_notification($order_id, $customer)
 	{
    		global $woocommerce;
    		$order = new WC_Order($order_id);
@@ -52,14 +52,15 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
       	// Email for customer
       	$mail_customer = $woocommerce->mailer();
       	$message = $mail_customer->wrap_message(
-        sprintf(__('Hola, %s'), $transaction->data->object->details->name), $body_message);
+        sprintf(__('Hola, %s'), $customer), $body_message);
      	$mail_customer->send($order->billing_email, $title, $message);
-     	
+     	unset($mail_customer);
      	//Email for admin site
      	$mail_admin = $woocommerce->mailer();
      	$message = $mail_admin->wrap_message(
         sprintf(__('Pago realizado satisfactoriamente')), $body_message);
      	$mail_admin->send(get_option("admin_email"), $title, $message);
+     	unset($mail_admin);
     }
 
     private function assemble_email_payment($order){
