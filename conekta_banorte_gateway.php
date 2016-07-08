@@ -149,7 +149,7 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
          * @param bool $sent_to_admin
          * @param bool $plain_text
          */
-        public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
+        public function email_instructions( $order, $sent_to_admin = false, $plain_text = false ) {
             $instructions = $this->form_fields['instructions'];
             if ( $instructions && 'on-hold' === $order->status ) {
                 echo wpautop( wptexturize( $instructions['default'] ) ) . PHP_EOL;

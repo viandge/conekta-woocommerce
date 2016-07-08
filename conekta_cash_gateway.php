@@ -104,14 +104,14 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                                                               'title' => __( 'Description', 'woocommerce' ),
                                                               'type' => 'textarea',
                                                               'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-                                                              'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando la clave que mandaremos a tu e-mail.', 'woocommerce' ),
+                                                              'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando el código de barras que se encuentra a continuación (si no te es posible verlo acepta las imágenes de este correo).', 'woocommerce' ),
                                                               'desc_tip' => true,
                                                               ),
                                        'instructions' => array(
                                                                'title' => __( 'Instructions', 'woocommerce' ),
                                                                'type' => 'textarea',
                                                                'description' => __( 'Instructions that will be added to the thank you page and emails.', 'woocommerce' ),
-                                                               'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando la clave que mandaremos a tu e-mail.', 'woocommerce' ),
+                                                               'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando el código de barras que se encuentra a continuación (si no te es posible verlo acepta las imágenes de este correo).', 'woocommerce' ),
                                                                'desc_tip' => true,
                                                                ),
                                        );
@@ -151,7 +151,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
          * @param bool $sent_to_admin
          * @param bool $plain_text
          */
-        public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
+        public function email_instructions( $order, $sent_to_admin = false, $plain_text = false ) {
             $instructions = $this->form_fields['instructions'];
             if ( $instructions && 'on-hold' === $order->status ) {
                 echo wpautop( wptexturize( $instructions['default'] ) ) . PHP_EOL;
