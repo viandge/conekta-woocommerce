@@ -20,4 +20,12 @@
 			"11" => "11 - Noviembre",
 			"12" => "12 - Diciembre",
 		),
+		"card_name" => "Nombre del tarjetahabiente",
+		"card_number" => "Número de la tarjeta",
+		"month_options" => "Mes de expiración",
+		"year_options" => "Año de expiración",
+		"payment_type" => "Tipo de Pago",
+		"month" => "Mes",
+		"year" => "Año",
+		"single_payment" => "Pago único"
 	);
