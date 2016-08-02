@@ -28,7 +28,4 @@
 		"month" => "Mes",
 		"year" => "Año",
 		"single_payment" => "Pago único"
-
 	);
-
-?>
