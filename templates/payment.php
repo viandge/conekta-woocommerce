@@ -9,28 +9,27 @@
 <div class="clear"></div>
 <span style="width: 100%; float: left; color: red;" class='payment-errors required'></span>
 <p class="form-row form-row-first">
-  <label>Número de tarjeta de crédito <span class="required">*</span></label>
+  <label><?php $this->lang_options["card_number"] ?><span class="required">*</span></label>
   <input class="input-text" type="text" size="19" maxlength="19" data-conekta="card[number]" />
 </p>
 <p class="form-row form-row-last">
-<label> Nombre del tarjetahabiente <span class="required">*</span></label>
+<label> <?php $this->lang_options["card_name"] ?><span class="required">*</span></label>
 <input type="text" data-conekta="card[name]" class="input-text" />
 </p>
 <div class="clear"></div>
 <p class="form-row form-row-first">
-  <label>Mes de expiración <span class="required">*</span></label>
+  <label><?php $this->lang_options["month_options"] ?> <span class="required">*</span></label>
 <select id="card_expiration" data-conekta="card[exp_month]" class="month" autocomplete="off">
-         <option selected="selected" value=""> Mes</option>
+         <option selected="selected" value=""><?php $this->lang_options["month"] ?></option>
          <?php foreach($this->lang_options["card_expiration"] as $month => $description): ?>
           <option value="<?php echo $month; ?>"><?php echo $description; ?></option>
          <?php endforeach; ?>
        </select>
 </p>
 <p class="form-row form-row-last">
-  <label>Año de expiración <span class="required">*</span></label>
+  <label><?php $this->lang_options["year_options"] ?><span class="required">*</span></label>
 <select id="card_expiration_yr" data-conekta="card[exp_year]" class="year" autocomplete="off">
-          <option selected="selected" value=""> Año</option>
-          <option value="2015">2015</option>
+          <option selected="selected" value=""> <?php $this->lang_options["year"] ?></option>
           <option value="2016">2016</option>
           <option value="2017">2017</option>
           <option value="2018">2018</option>
@@ -53,9 +52,9 @@
 <?php if ($this->enablemeses): ?>
 
 <p class="form-row form-row-first">
-<label> Tipo de Pago <span class="required">*</span></label>
+<label><?php $this->lang_options["payment_type"] ?><span class="required">*</span></label>
 <select id="monthly_installments" name="monthly_installments" autocomplete="off">
-<option selected="selected" value="1"> Pago único</option>
+<option selected="selected" value="1"><?php $this->lang_options["single_payment"] ?></option>
 <?php foreach($this->lang_options["monthly_installments"] AS $months => $description): ?>
   <option value="<?php echo $months; ?>"><?php echo $description; ?></option>
 <?php endforeach; ?>

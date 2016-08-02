@@ -21,4 +21,13 @@
 			"11" => "11 - November",
 			"12" => "12 - December",
 		),
+		"card_name" => "Card holder name",
+		"card_number" => "Card number",
+		"month_options" => "Expiry month",
+		"year_options" => "Expiry year",
+		"payment_type" => "Payment type",
+		"month" => "Month",
+		"year" => "Year",
+		"single_payment" => "Single payment"
+
 	);
