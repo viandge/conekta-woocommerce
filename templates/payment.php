@@ -54,7 +54,7 @@
 <p class="form-row form-row-first">
   <label><?php echo $this->lang_options["payment_type"] ?><span class="required">*</span></label>
   <select id="monthly_installments" name="monthly_installments" autocomplete="off">
-    <option selected="selected" value="1"><?php $this->lang_options["single_payment"] ?></option>
+    <option selected="selected" value="1"><?php echo $this->lang_options["single_payment"] ?></option>
     <?php foreach($this->lang_options["monthly_installments"] AS $months => $description): ?>
       <option value="<?php echo $months; ?>"><?php echo $description; ?></option>
     <?php endforeach; ?>
