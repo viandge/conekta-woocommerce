@@ -53,7 +53,7 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
       $order_id = $charge->reference_id;
       $paid_at = date("Y-m-d", $charge->paid_at);
       $order = new WC_Order( $order_id );
-    if (strpos($event->type, "charge.paid") !== false) 
+    if (strpos($event->type, "charge.paid") !== false && $event->payment_method->type === "banorte") 
     {
       update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
       $order->payment_complete();
