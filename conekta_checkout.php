@@ -1,4 +1,5 @@
 <?php
+
 /*
 Plugin Name: Conekta Payment Gateway
 Plugin URI: https://wordpress.org/plugins/conekta-woocommerce/
