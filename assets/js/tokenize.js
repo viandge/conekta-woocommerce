@@ -1,26 +1,7 @@
-function formatFields(){
-	jQuery('#conekta-card-number').payment('formatCardNumber');
-	jQuery('#conekta-card-expiration').payment('formatCardExpiry');
-	jQuery('#conekta-card-cvc').payment('formatCardCVC');
-}
-
-function formToObject(form){
-	var values = {};
-	jQuery.each(form.serializeArray(), function(i, field) {
-	    values[field.name] = field.value;
-	});
-	return values;
-}
-
 jQuery(document).ready(function($) {
 	Conekta.setPublishableKey(wc_conekta_params.public_key);
 
 	var $form = $('form.checkout,form#order_review');
-
-	formatFields();
-	$('body').on('updated_checkout', function () {
-		formatFields();
-	});
 
 	var conektaErrorResponseHandler = function(response) {
 		$form.find('.payment-errors').text(response.message_to_purchaser);
@@ -57,42 +38,7 @@ jQuery(document).ready(function($) {
 			return true;
 		}
 
-		var formData = formToObject($form);
-		var expiration = $("#conekta-card-expiration").val().replace(/ /g,'').split("/");
-		var exp_month = expiration[0];
-
-		switch (expiration[1].length){
-			case 4:
-				var exp_year = expiration[1];
-				break;
-			case 2:
-				var exp_year = "20" + expiration[1];
-				break;
-			default:
-				alert("CVC is invalid");
-				return false;
-				break;
-		}
-
-		var cardData = {
-			"card": {
-				"number": $("#conekta-card-number").val(),
-				"name": $("#conekta-card-name").val(),
-				"exp_year": exp_year,
-				"exp_month": exp_month,
-				"cvc": $("#conekta-card-cvc").val(),
-				"address": {
-					"street1": formData.billing_address_1,
-					"street2": formData.billing_address_2,
-					"city": formData.billing_city,
-					"state": formData.billing_state,
-					"zip": formData.billing_postcode,
-					"country": formData.billing_country
-				}
-			}
-		};
-
-		Conekta.token.create(cardData, conektaSuccessResponseHandler, conektaErrorResponseHandler);
+		Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
 
 		return false;
 	}); 
