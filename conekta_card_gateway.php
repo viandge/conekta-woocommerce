@@ -146,7 +146,9 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         global $woocommerce;
         include_once('conekta_gateway_helper.php');
         Conekta::setApiKey($this->secret_key);
-        Conekta::setLocale("es");   
+        Conekta::setLocale("es");
+        Conekta::setApiVersion("1.0.0");
+        
         $data = getRequestData($this->order);
 
         try {
