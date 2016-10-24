@@ -152,9 +152,11 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
          * @param bool $plain_text
          */
         public function email_instructions( $order, $sent_to_admin = false, $plain_text = false ) {
-            $instructions = $this->form_fields['instructions'];
-            if ( $instructions && 'on-hold' === $order->status ) {
-                echo wpautop( wptexturize( $instructions['default'] ) ) . PHP_EOL;
+            if (get_post_meta( $order->id, '_payment_method', true ) === $this->id){
+                $instructions = $this->form_fields['instructions'];
+                if ( $instructions && 'on-hold' === $order->status ) {
+                    echo wpautop( wptexturize( $instructions['default'] ) ) . PHP_EOL;
+                }
             }
         }
         

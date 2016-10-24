@@ -5,56 +5,59 @@
  * Url     : https://www.conekta.io/es/docs/plugins/woocommerce
  */
 ?>
-<div id="conekta_pub_key" class="hidden" style="display:none;" data-publishablekey="<?php echo $this->publishable_key; ?>"> </div>
 <div class="clear"></div>
 <span style="width: 100%; float: left; color: red;" class='payment-errors required'></span>
+<div class="form-row form-row-wide">
+  <label for="conekta-card-number"><?php echo $this->lang_options["card_number"]; ?><span class="required">*</span></label>
+  <input id="conekta-card-number" class="input-text" type="text" data-conekta="card[number]" />
+</div>
+
+<div class="form-row form-row-wide">
+  <label for="conekta-card-name"> <?php echo $this->lang_options["card_name"]; ?><span class="required">*</span></label>
+  <input id="conekta-card-name" type="text" data-conekta="card[name]" class="input-text" />
+</div>
+
+<div class="clear"></div>
+
 <p class="form-row form-row-first">
-  <label><?php echo $this->lang_options["card_number"] ?><span class="required">*</span></label>
-  <input class="input-text" type="text" size="19" maxlength="19" data-conekta="card[number]" />
+    <label for="card_expiration"><?php echo $this->lang_options["month_options"] ?> <span class="required">*</span></label>
+    <select id="card_expiration" data-conekta="card[exp_month]" class="month" autocomplete="off">
+             <option selected="selected" value=""><?php echo $this->lang_options["month"] ?></option>
+             <?php foreach($this->lang_options["card_expiration"] as $month => $description): ?>
+              <option value="<?php echo $month; ?>"><?php echo $description; ?></option>
+             <?php endforeach; ?>
+    </select>
 </p>
 <p class="form-row form-row-last">
-<label> <?php echo $this->lang_options["card_name"] ?><span class="required">*</span></label>
-<input type="text" data-conekta="card[name]" class="input-text" />
+    <label><?php echo $this->lang_options["year_options"] ?><span class="required">*</span></label>
+    <select id="card_expiration_yr" data-conekta="card[exp_year]" class="year" autocomplete="off">
+              <option selected="selected" value=""> <?php echo $this->lang_options["year"] ?></option>
+              <?php 
+              $start_year = (integer) date("Y"); 
+              $end_year = (integer) date("Y", strtotime("+10 years")); 
+              for($i = $start_year; $i <= $end_year; $i++): ?>
+                <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+              <?php endfor; ?>
+    </select>
 </p>
+
+<!--<div class="form-row form-row-wide">
+  <label for="conekta-card-expiration"><?php echo $this->lang_options["expiration"]; ?> (MM/YY) <span class="required">*</span></label>
+  <input id="conekta-card-expiration" data-conekta="card[expiration]" class="input-text" type="text" autocomplete="off" placeholder="MM / YY" />
+</div>-->
+
 <div class="clear"></div>
+
 <p class="form-row form-row-first">
-  <label><?php echo $this->lang_options["month_options"] ?> <span class="required">*</span></label>
-<select id="card_expiration" data-conekta="card[exp_month]" class="month" autocomplete="off">
-         <option selected="selected" value=""><?php echo $this->lang_options["month"] ?></option>
-         <?php foreach($this->lang_options["card_expiration"] as $month => $description): ?>
-          <option value="<?php echo $month; ?>"><?php echo $description; ?></option>
-         <?php endforeach; ?>
-       </select>
+    <label for="conekta-card-cvc">CVC <span class="required">*</span></label>
+    <input id="conekta-card-cvc" class="input-text" type="text" maxlength="4" data-conekta="card[cvc]" value=""  style="border-radius:6px"/>
 </p>
-<p class="form-row form-row-last">
-  <label><?php echo $this->lang_options["year_options"] ?><span class="required">*</span></label>
-<select id="card_expiration_yr" data-conekta="card[exp_year]" class="year" autocomplete="off">
-          <option selected="selected" value=""> <?php echo $this->lang_options["year"] ?></option>
-          <option value="2016">2016</option>
-          <option value="2017">2017</option>
-          <option value="2018">2018</option>
-          <option value="2019">2019</option>
-          <option value="2020">2020</option>
-          <option value="2021">2021</option>
-          <option value="2022">2022</option>
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
-          <option value="2025">2025</option>
-</select>
-</p>
-<div class="clear"></div>
-<p class="form-row form-row-first">
-    <label>CVC <span class="required">*</span></label>
-    <input class="input-text" type="text" maxlength="4" data-conekta="card[cvc]" value=""  style="border-radius:6px"/>
-</p>
-<div class="clear"></div>
 
 <?php if ($this->enablemeses): ?>
-
-<p class="form-row form-row-first">
+<p class="form-row form-row-last">
   <label><?php echo $this->lang_options["payment_type"] ?><span class="required">*</span></label>
   <select id="monthly_installments" name="monthly_installments" autocomplete="off">
-    <option selected="selected" value="1"><?php $this->lang_options["single_payment"] ?></option>
+    <option selected="selected" value="1"><?php echo $this->lang_options["single_payment"] ?></option>
     <?php foreach($this->lang_options["monthly_installments"] AS $months => $description): ?>
       <option value="<?php echo $months; ?>"><?php echo $description; ?></option>
     <?php endforeach; ?>
@@ -62,68 +65,4 @@
 </p>
 
 <?php endif; ?>
-
-
 <div class="clear"></div>
-
-<script>
-  var initConektaCheckout = function() {
-    jQuery(function($) {
-      var $form = $('form.checkout,form#order_review');
-
-      var conektaErrorResponseHandler = function(response) {
-        $form.find('.payment-errors').text(response.message_to_purchaser);
-        $form.unblock();
-      };
-           
-      var conektaSuccessResponseHandler = function(response) {
-        $form.append($('<input type="hidden" name="conektaToken" />').val(response.id));
-        $form.submit();
-      };
-
-      jQuery('body').on('click', '#place_order,form#order_review input:submit', function() {
-        if (jQuery('.payment_methods input:checked').val() !== 'conektacard') {
-          return true;
-        }
-
-        Conekta.setPublishableKey(jQuery('#conekta_pub_key').data('publishablekey'));
-        Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
-        return false;
-      });
-
-      jQuery('body').on('click', '#place_order,form.checkout input:submit', function(){
-        if(jQuery('.payment_methods input:checked').val() !== 'conektacard') {
-          return true;
-        }
-        jQuery('form.checkout').find('[name=conektaToken]').remove();
-      });
-
-      jQuery('form.checkout').bind('#place_order,checkout_place_order_ConektaCard', function(e){
-        if(jQuery('input[name=payment_method]:checked').val() != 'conektacard') {
-          return true;
-        }
-
-        $form.find('.payment-errors').html('');
-        $form.block({message: null,overlayCSS: {background: "#fff url(" + woocommerce_params.ajax_loader_url + ") no-repeat center", backgroundSize: "16px 16px",opacity: .6}});
-
-        if ($form.find('[name="conektaToken"]').length)
-          return true;
-
-        Conekta.setPublishableKey(jQuery('#conekta_pub_key').data('publishablekey'));
-        Conekta.token.create($form, conektaSuccessResponseHandler, conektaErrorResponseHandler);
-        return false;
-      });
-    });
-  };
-
-  if (typeof jQuery=='undefined') {
-    var headTag = document.getElementsByTagName("head")[0];
-    var jqTag = document.createElement('script');
-    jqTag.type = 'text/javascript';
-    jqTag.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js';
-    jqTag.onload = initConektaCheckout;
-    headTag.appendChild(jqTag);
-  } else {
-    initConektaCheckout()
-  }
-</script>

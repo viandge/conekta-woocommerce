@@ -1,5 +1,4 @@
 <?php
-
 	return array(
 		"monthly_installments" => array(
 			"3" => "3 months",
@@ -29,5 +28,4 @@
 		"month" => "Month",
 		"year" => "Year",
 		"single_payment" => "Single payment"
-
 	);
