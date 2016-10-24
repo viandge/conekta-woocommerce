@@ -20,7 +20,7 @@
         protected $publishable_key            = '';
 
         protected $lang_options               = array();
-        
+
         public function __construct()
         {
             $this->id              = 'conektacard';
@@ -46,19 +46,19 @@
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
             add_action('admin_notices'                              , array(&$this, 'perform_ssl_check'    ));
 
-        }        
-        
+        }
+
         /**
-        * Checks to see if SSL is configured and if plugin is configured in production mode 
-        * Forces use of SSL if not in testing 
-        */ 
+        * Checks to see if SSL is configured and if plugin is configured in production mode
+        * Forces use of SSL if not in testing
+        */
         public function perform_ssl_check()
         {
             if (!$this->usesandboxapi && get_option('woocommerce_force_ssl_checkout') == 'no' && $this->enabled == 'yes') :
                 echo '<div class="error"><p>'.sprintf(__('%s sandbox testing is disabled and can performe live transactions but the <a href="%s">force SSL option</a> is disabled; your checkout is not secure! Please enable SSL and ensure your server has a valid SSL certificate.', 'woothemes'), $this->GATEWAY_NAME, admin_url('admin.php?page=settings')).'</p></div>';
             endif;
         }
-        
+
         public function init_form_fields()
         {
             $this->form_fields = array(
@@ -111,13 +111,13 @@
                                                                      'title'       => __('Alternate Image to display on checkout, use fullly qualified url, served via https', 'woothemes'),
                                                                      'default'     => __('', 'woothemes')
                                                                      ),
-                                       
-                                       
+
+
                                        );
         }
-        
+
         /**
-        * Load the admin fields 
+        * Load the admin fields
         */
         public function admin_options()
         {
@@ -125,29 +125,29 @@
         }
         /**
         * Load the credit card fields into the checkout view
-        * Contains js for tokenizing the credit card 
-        */        
+        * Contains js for tokenizing the credit card
+        */
         public function payment_fields()
         {
             include_once('templates/payment.php');
         }
-        
+
         protected function send_to_conekta()
         {
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
-            Conekta::setApiKey($this->secret_key);
-            Conekta::setLocale("es");	
+           \Conekta\Conekta::setApiKey($this->secret_key);
+            \Conekta\Conekta::setLocale("es");
             $data = getRequestData($this->order);
-            
+
             try {
-              
+
                 $line_items = array();
                 $items = $this->order->get_items();
                 $line_items = build_line_items($items);
                 $details = build_details($data, $line_items);
-                
-                $charge = Conekta_Charge::create(array(
+
+                $charge = \Conekta\Charge::create(array(
                             "amount"      => $data['amount'],
                             "currency"    => $data['currency'],
                             "monthly_installments" => $data['monthly_installments'] > 1 ? $data['monthly_installments'] : null,
@@ -156,15 +156,15 @@
                             "description" => "Compra con orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
                             "details"     => $details,
                         ));
-                
+
                 $this->transactionId = $charge->id;
                 if ($data['monthly_installments'] > 1) {
                 update_post_meta( $this->order->id, 'meses-sin-intereses', $data['monthly_installments']);
                 }
                 update_post_meta( $this->order->id, 'transaction_id', $this->transactionId);
                 return true;
-                
-            } catch(Conekta_Error $e) {
+
+            } catch(Exception $e) {
                 $description = $e->message_to_purchaser;
 
         		global $wp_version;
@@ -177,7 +177,7 @@
                 return false;
             }
         }
-        
+
         public function process_payment($order_id)
         {
             global $woocommerce;
@@ -185,7 +185,7 @@
             if ($this->send_to_conekta())
             {
                 $this->completeOrder();
-                
+
                 $result = array(
                                 'result' => 'success',
                                 'redirect' => $this->get_return_url($this->order)
@@ -197,7 +197,7 @@
                 $this->markAsFailedPayment();
             }
         }
-        
+
         protected function markAsFailedPayment()
         {
             $this->order->add_order_note(
@@ -208,18 +208,18 @@
                                                  )
                                          );
         }
-        
+
         protected function completeOrder()
         {
             global $woocommerce;
-            
+
             if ($this->order->status == 'completed')
                 return;
-           
+
             // adjust stock levels and change order status
             $this->order->payment_complete();
             $woocommerce->cart->empty_cart();
-            
+
             $this->order->add_order_note(
                                          sprintf(
                                                  "%s payment completed with Transaction Id of '%s'",
@@ -227,35 +227,35 @@
                                                  $this->transactionId
                                                  )
                                          );
-            
+
             unset($_SESSION['order_awaiting_payment']);
         }
-        
-        
+
+
     }
-    
+
     function conekta_card_order_status_completed($order_id = null)
     {
         global $woocommerce;
         if (!$order_id)
             $order_id = $_POST['order_id'];
-        
+
         $data = get_post_meta( $order_id );
         $total = $data['_order_total'][0] * 100;
-        
+
         $params = array();
         if(isset($_POST['amount']) && $amount = $_POST['amount'])
         {
             $params['amount'] = round($amount);
         }
     }
-   
-    // tell WC that WC_Conekta_Card_Gateway class exists 
+
+    // tell WC that WC_Conekta_Card_Gateway class exists
     function conektacheckout_add_card_gateway($methods)
     {
         array_push($methods, 'WC_Conekta_Card_Gateway');
         return $methods;
     }
-    
+
     add_filter('woocommerce_payment_gateways',                      'conektacheckout_add_card_gateway');
     add_action('woocommerce_order_status_processing_to_completed',  'conekta_card_order_status_completed' );

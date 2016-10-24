@@ -13,7 +13,7 @@ if (!class_exists('Conekta'))
 
 class WC_Conekta_Plugin extends WC_Payment_Gateway
 {
-	public $version  = "0.4.0";
+	public $version  = "0.5.0";
 	public $description = "Payment Gateway through Conekta.io for Woocommerce for both credit and debit cards as well as cash payments in OXXO and monthly installments for Mexican credit cards.";
 	public $plugin_name = "Conekta Payment Gateway for Woocommerce";
 	public $plugin_URI = "https://wordpress.org/plugins/conekta-woocommerce/";
@@ -30,7 +30,7 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
 			$current_lang = explode("_", get_locale());
 			$this->lang = $current_lang[0];
 			$this->lang_messages = require_once("lang/" . $this->lang . ".php");
-			Conekta::setLocale($this->lang);
+			\Conekta\Conekta::setLocale($this->lang);
 		}
 
 		return $this;
@@ -48,7 +48,7 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
 
    		$title = sprintf("Se ha efectuado el pago del pedido %s", $order->get_order_number());
    		$body_message = "<p style=\"margin:0 0 16px\">Se ha detectado el pago del siguiente pedido:</p><br />" . $this->assemble_email_payment($order);
-      	
+
       	// Email for customer
       	$mail_customer = $woocommerce->mailer();
       	$message = $mail_customer->wrap_message(

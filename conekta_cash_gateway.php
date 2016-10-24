@@ -172,8 +172,8 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         {
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
-            Conekta::setApiKey($this->secret_key);
-            Conekta::setLocale("es");
+           \Conekta\Conekta::setApiKey($this->secret_key);
+            \Conekta\Conekta::setLocale("es");
             $data = getRequestData($this->order);
             $line_items = array();
             $items = $this->order->get_items();
@@ -182,7 +182,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
  
             try {
   
-                $charge = Conekta_Charge::create(array(
+                $charge = \Conekta\Charge::create(array(
                             "amount"=> $data['amount'],
                             "currency"=> $data['currency'],
                             "reference_id" => $this->order->id,
@@ -200,7 +200,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 update_post_meta( $this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url );
                 return true;
                 
-            } catch(Conekta_Error $e) {
+            } catch(Exception $e) {
                 $description = $e->message_to_purchaser;
 
                 global $wp_version;

@@ -7,7 +7,7 @@
      * Author  : Conekta.io
      * Url     : https://wordpress.org/plugins/conekta-woocommerce
      */
-    
+
 class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
 {
         protected $GATEWAY_NAME               = "WC_Conekta_Spei_Gateway";
@@ -18,12 +18,12 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
         protected $conektaTestApiKey           = '';
         protected $conektaLiveApiKey           = '';
         protected $publishable_key            = '';
-        
+
         public function __construct()
         {
             $this->id              = 'conektaspei';
             $this->method_title       = __( 'Conekta Spei', 'woocommerce' );
-            $this->has_fields      = true;            
+            $this->has_fields      = true;
             $this->init_form_fields();
             $this->init_settings();
             $this->title              = $this->settings['title'];
@@ -37,30 +37,30 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
             add_action( 'woocommerce_email_before_order_table', array( $this, 'email_reference' ) );
             add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ) );
-            add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'webhook_handler' ) );  
+            add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'webhook_handler' ) );
         }
 
         /**
         * Updates the status of the order.
         * Webhook needs to be added to Conekta account tusitio.com/wc-api/WC_Conekta_Spei_Gateway
         */
-  public function webhook_handler() 
+  public function webhook_handler()
   {
       header('HTTP/1.1 200 OK');
-      $body = @file_get_contents('php://input');    
+      $body = @file_get_contents('php://input');
       $event = json_decode($body);
       $charge = $event->data->object;
       $order_id = $charge->reference_id;
       $paid_at = date("Y-m-d", $charge->paid_at);
       $order = new WC_Order( $order_id );
-    if (strpos($event->type, "charge.paid") !== false && $event->payment_method->type === "spei") 
+    if (strpos($event->type, "charge.paid") !== false && $event->payment_method->type === "spei")
     {
       update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
       $order->payment_complete();
       $order->add_order_note(sprintf("Payment completed in Spei and notification of payment received"));
     }
   }
-   
+
         public function init_form_fields()
         {
             $this->form_fields = array(
@@ -113,7 +113,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                                                                ),
                                        );
         }
-        
+
         /**
          * Output for the order received page.
          * @param string $order_id
@@ -122,7 +122,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             $order = new WC_Order( $order_id );
             echo '<p><strong>'.__('Clabe').':</strong> ' . get_post_meta( $order->id, 'conekta-clabe', true ). '</p>';
         }
-        
+
         /**
          * Add content to the WC emails.
          *
@@ -136,7 +136,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 echo '<p><strong>'.__('Clabe').':</strong> ' . get_post_meta( $order->id, 'conekta-clabe', true ). '</p>';
           }
         }
-        
+
         /**
          * Add content to the WC emails.
          *
@@ -151,32 +151,32 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 echo wpautop( wptexturize( $instructions['default'] ) ) . PHP_EOL;
             }
         }
-        
+
         public function admin_options()
         {
             include_once('templates/spei_admin.php');
         }
-        
+
         public function payment_fields()
         {
             include_once('templates/spei.php');
         }
-        
+
         protected function send_to_conekta()
         {
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
-            Conekta::setApiKey($this->secret_key);
-            Conekta::setLocale("es");
+            \Conekta\Conekta::setApiKey($this->secret_key);
+            \Conekta\Conekta::setLocale("es");
             $data = getRequestData($this->order);
             $line_items = array();
             $items = $this->order->get_items();
             $line_items = build_line_items($items);
             $details = build_details($data,$line_items);
- 
+
             try {
-  
-                $charge = Conekta_Charge::create(array(
+
+                $charge = \Conekta\Charge::create(array(
                             "amount"=> $data['amount'],
                             "currency"=> $data['currency'],
                             "reference_id" => $this->order->id,
@@ -192,8 +192,8 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 update_post_meta( $this->order->id, 'conekta-expira', $charge->payment_method->expiry_date );
                 update_post_meta( $this->order->id, 'conekta-clabe', $charge->payment_method->receiving_account_number );
                 return true;
-                
-            } catch(Conekta_Error $e) {
+
+            } catch(Exception $e) {
                 $description = $e->message_to_purchaser;
 
                 global $wp_version;
@@ -206,7 +206,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 return false;
             }
         }
-        
+
         public function process_payment($order_id)
         {
             global $woocommerce;
@@ -215,7 +215,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             {
                 // Mark as on-hold (we're awaiting the notification of payment)
                 $this->order->update_status('on-hold', __( 'Awaiting the conekta OXOO payment', 'woocommerce' ));
-                
+
                 // Remove cart
                 $woocommerce->cart->empty_cart();
                 unset($_SESSION['order_awaiting_payment']);
@@ -236,7 +236,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 }
             }
         }
-        
+
         protected function markAsFailedPayment()
         {
             $this->order->add_order_note(
@@ -247,14 +247,14 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                                                  )
                                          );
         }
-        
+
         protected function completeOrder()
         {
             global $woocommerce;
-            
+
             if ($this->order->status == 'completed')
                 return;
-            
+
             $this->order->payment_complete();
             $woocommerce->cart->empty_cart();
             $this->order->add_order_note(
@@ -264,33 +264,33 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                                                  $this->transactionId
                                                  )
                                          );
-            
+
             unset($_SESSION['order_awaiting_payment']);
         }
-        
+
     }
-    
+
     function conekta_spei_order_status_completed($order_id = null)
     {
         global $woocommerce;
         if (!$order_id)
             $order_id = $_POST['order_id'];
-        
+
         $data = get_post_meta( $order_id );
         $total = $data['_order_total'][0] * 100;
-        
+
         $params = array();
         if(isset($_POST['amount']) && $amount = $_POST['amount'])
         {
             $params['amount'] = round($amount);
         }
     }
-   
+
     function conektacheckout_add_spei_gateway($methods)
     {
         array_push($methods, 'WC_Conekta_Spei_Gateway');
         return $methods;
     }
-    
+
     add_filter('woocommerce_payment_gateways',                      'conektacheckout_add_spei_gateway');
     add_action('woocommerce_order_status_processing_to_completed',  'conekta_spei_order_status_completed' );
