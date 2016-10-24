@@ -38,7 +38,6 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         $this->livePublishableKey = $this->settings['live_publishable_key'];
         $this->publishable_key    = $this->usesandboxapi ? $this->testPublishableKey : $this->livePublishableKey;
         $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
-
         $this->lang_options = parent::set_locale_options()->get_lang_options();
 
         add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
@@ -56,55 +55,10 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
     */
     public function perform_ssl_check()
     {
-        protected $GATEWAY_NAME               = "WC_Conekta_Card_Gateway";
-        protected $usesandboxapi              = true;
-        protected $enablemeses                = false;
-        protected $order                      = null;
-        protected $transactionId              = null;
-        protected $transactionErrorMessage    = null;
-        protected $conektaTestApiKey          = '';
-        protected $conektaLiveApiKey          = '';
-        protected $publishable_key            = '';
-
-        protected $lang_options               = array();
-
-        public function __construct()
-        {
-            $this->id              = 'conektacard';
-            $this->method_title       = __( 'Conekta Card', 'woocommerce' );
-            $this->has_fields      = true;
-            $this->init_form_fields();
-            $this->init_settings();
-            $this->title              = $this->settings['title'];
-            $this->description        = '';
-            $this->icon 		      = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/credits.png';
-            $this->usesandboxapi      = strcmp($this->settings['debug'], 'yes') == 0;
-            $this->enablemeses = strcmp($this->settings['meses'], 'yes') == 0;
-            $this->testApiKey 		  = $this->settings['test_api_key'];
-            $this->liveApiKey 		  = $this->settings['live_api_key'];
-            $this->testPublishableKey = $this->settings['test_publishable_key'];
-            $this->livePublishableKey = $this->settings['live_publishable_key'];
-            //$this->useUniquePaymentProfile = strcmp($this->settings['enable_unique_profile'], 'yes') == 0;
-            $this->publishable_key    = $this->usesandboxapi ? $this->testPublishableKey : $this->livePublishableKey;
-            $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
-
-            $this->lang_options = parent::set_locale_options()->get_lang_options();
-
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
-            add_action('admin_notices'                              , array(&$this, 'perform_ssl_check'    ));
-
+        if (!$this->usesandboxapi && get_option('woocommerce_force_ssl_checkout') == 'no' && $this->enabled == 'yes') {
+            echo '<div class="error"><p>'.sprintf(__('%s sandbox testing is disabled and can performe live transactions but the <a href="%s">force SSL option</a> is disabled; your checkout is not secure! Please enable SSL and ensure your server has a valid SSL certificate.', 'woothemes'), $this->GATEWAY_NAME, admin_url('admin.php?page=settings')).'</p></div>';
         }
-
-        /**
-        * Checks to see if SSL is configured and if plugin is configured in production mode
-        * Forces use of SSL if not in testing
-        */
-        public function perform_ssl_check()
-        {
-          if (!$this->usesandboxapi && get_option('woocommerce_force_ssl_checkout') == 'no' && $this->enabled == 'yes') {
-              echo '<div class="error"><p>'.sprintf(__('%s sandbox testing is disabled and can performe live transactions but the <a href="%s">force SSL option</a> is disabled; your checkout is not secure! Please enable SSL and ensure your server has a valid SSL certificate.', 'woothemes'), $this->GATEWAY_NAME, admin_url('admin.php?page=settings')).'</p></div>';
-          }
-        }
+    }
 
     public function init_form_fields()
     {
@@ -219,7 +173,6 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
             }
             update_post_meta( $this->order->id, 'transaction_id', $this->transactionId);
             return true;
-
         } catch(Exception $e) {
             $description = $e->message_to_purchaser;
             global $wp_version;

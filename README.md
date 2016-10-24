@@ -1,5 +1,5 @@
-Conekta Woocommerce v.0.5.0
 
+Conekta Woocommerce v.0.5.0
 
 WooCommerce Payment Gateway for Conekta.io
 
