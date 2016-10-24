@@ -1,4 +1,4 @@
-Conekta Woocommerce v.0.4.0
+Conekta Woocommerce v.0.5.0
 =======================
 
 WooCommerce Payment Gateway for Conekta.io
@@ -25,7 +25,7 @@ Current version features:
 
 Version Compatibility
 ---------------------
-This plugin has been tested on Wordpress 4.5.3  WooCommerce 2.6.1
+This plugin has been tested on Wordpress 4.6.1,  WooCommerce 2.6.6 with PHP 7 
 
 Installation
 -----------
@@ -43,4 +43,3 @@ http://tusitio.com/wc-api/WC_Conekta_Cash_Gateway
 ![alt tag](https://raw.github.com/cristinarandall/conekta-woocommerce/master/readme_files/webhook.png)
 
 Replace to tusitio.com with your domain name
-

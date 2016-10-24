@@ -1,9 +1,9 @@
 === Conekta Woocommerce ===
 Contributors: cristinarandall
 Tags: free, oxxo, conekta, mexico, payment gateway
-Requires at least: 3.5.2
-Tested up to: 4.2.2
-Stable tag: 0.3.0
+Requires at least: 4.6.1
+Tested up to: 4.6.1
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,7 +36,7 @@ Replace to tusitio.com with your domain name
 == Screenshots ==
 1. In your Woocommerce admin in Settings > Checkout, you will need to add the API Keys from your Conekta.io account
 2. Also, you will need o configure webhooks correctly in your conekta account adding http://tusitio.com/wc-api/WC_Conekta_Cash_Gateway so that the order status changes dynamically
-3. Once the user pays with the barcode or reference the order status in your Woocommerce admin will automatically change  
+3. Once the user pays with the barcode or reference the order status in your Woocommerce admin will automatically change
 4. You will need to configure SSL since the user will be entering their credit card information directly in the checkout. They will not be redirected to another page.
 
 == Changelog ==
@@ -53,9 +53,15 @@ Replace to tusitio.com with your domain name
 * Barcode sent in mail and displayed in order the confirmation page
 * Order Status changed dynamically once webhook is added in Conekta.io Account
 
-= 0.2.0 = 
+= 0.2.0 =
 * Added option for difered payments for 3, 6, and 12 months
 * Enable or disable difered payments from the admin
 
 = 0.3.0 =
-* Added additional parameters required for more robust anti-fraude service for card payments 
+* Added additional parameters required for more robust anti-fraude service for card payments
+
+= 0.4.0 =
+* Added SPEI, Banorte.
+
+= 0.5.0 =
+* Added PHP 7 compatibility
