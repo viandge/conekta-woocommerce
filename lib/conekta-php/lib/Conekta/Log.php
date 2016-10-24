@@ -4,7 +4,7 @@ namespace Conekta;
 
 use \Conekta\Resource;
 
-class Payout extends Resource
+class Log extends Resource
 {
     public static function find($id)
     {
@@ -18,12 +18,5 @@ class Payout extends Resource
         $class = get_called_class();
 
         return parent::_scpWhere($class, $params);
-    }
-
-    public static function create($params = null)
-    {
-        $class = get_called_class();
-
-        return parent::_scpCreate($class, $params);
     }
 }
