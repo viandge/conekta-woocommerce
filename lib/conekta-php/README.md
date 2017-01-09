@@ -1,7 +1,7 @@
 
 ![alt tag](https://raw.github.com/conekta/conekta-php/master/readme_files/cover.png)
 
-# Conekta PHP v.1.9.9
+# Conekta PHP v.3.0.0
 
 This is a php library that allows interaction with https://api.conekta.io API.
 
@@ -17,13 +17,13 @@ To get started, add the following to your PHP script:
 
 You can also install this library with composer:
 
-  require: "conekta/conekta-php": "dev-master"
+  require: "conekta/conekta-php": "3.0.0"
 
 ## Usage
 ```php
-Conekta::setApiKey('1tv5yJp3xnVZ7eK67m4h');
+\Conekta\Conekta::setApiKey('1tv5yJp3xnVZ7eK67m4h');
 try {
-  $charge = Conekta_Charge::create(array(
+  $charge = \Conekta\Charge::create(array(
     "amount"=> 51000,
     "currency"=> "MXN",
     "description"=> "Pizza Delivery",
@@ -32,7 +32,8 @@ try {
     //"tok_a4Ff0dD2xYZZq82d9"
   ));
 } catch (Conekta_Error $e) {
-  echo $e->getMessage();
+  echo $e->getMessage(); //Dev Message
+  echo $e->message_to_purchaser;
   //El pago no pudo ser procesado
 }
 
@@ -84,3 +85,10 @@ Run test suite:
 License
 -------
 Developed by [Conekta](https://www.conekta.io). Available with [MIT License](LICENSE).
+
+We are hiring
+-------------
+
+If you are a comfortable working with a range of backend languages (Java, Python, Ruby, PHP, etc) and frameworks, you have solid foundation in data structures, algorithms and software design with strong analytical and debugging skills. 
+Send your CV, github to quieroser@conekta.io
+
