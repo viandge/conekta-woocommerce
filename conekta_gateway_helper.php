@@ -14,15 +14,17 @@ function build_line_items($items)
 {
     $line_items = array();
     foreach ($items as $item) {
-        $productmeta = new WC_Product( $item['product_id']);
-        $sku = $productmeta->get_sku();
-        $line_items = array_merge($line_items, array(array(
-         'name' => $item['name'],
-         'unit_price' => floatval($item['line_total']) * 100,
+        $productmeta = new WC_Product($item['product_id']);
+        $sku         = $productmeta->get_sku();
+        $unit_price  = (floatval($item['line_subtotal']) * 1000) / floatval($item['qty']);
+        $line_items  = array_merge($line_items, array(array(
+         'name'        => $item['name'],
+         'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
          'description' => $item['name'],
-         'quantity' => $item['qty'],
-         'sku' => $sku,
-         'type' => $item['type']
+         'quantity'    => intval($item['qty']),
+         'sku'         => $sku,
+         'type'        => 'physical',
+         'tags'        => ['WooCommerce']
          ))
         );
     }
@@ -30,11 +32,88 @@ function build_line_items($items)
     return $line_items;
 }
 
-/**
- * Build the detail hash
- * @param hash $data
- * @param array $line_items
- */
+function build_tax_lines($taxes)
+{
+    $tax_lines = array();
+
+    foreach ($taxes as $tax) {
+        $tax_amount = floatval($tax['tax_amount']) * 1000;
+        $tax_lines  = array_merge($tax_lines, array(
+            array(
+                "description" => $tax['label'],
+                "amount"      => intval(round(floatval($tax_amount) / 10), 2)
+            )
+        ));
+    }
+
+    return $tax_lines;
+}
+
+function build_shipping_lines($data)
+{
+    $shipping_lines = array(
+        array(
+            "description" => (empty($data['shipping_method']) ? "default" : $data['shipping_method']),
+            "amount"      => $data['shipping_cost'],
+            "carrier" => (empty($data['shipping_carrier']) ? "default" : $data['shipping_carrier']),
+            "method" => (empty($data['shipping_method']) ? "default" : $data['shipping_method'])
+        )
+    );
+
+    return $shipping_lines;
+}
+
+function build_discount_lines($data)
+{
+    if(!empty($data["card"]["coupon_code"])) {
+        $discount_lines = array(
+            array(
+                "description" => $data["card"]["coupon_code"],
+                "kind"        => "coupon",
+                "amount"      => $data["card"]["total_discount"]
+            )
+        );
+    }
+
+    return $discount_lines;
+}
+
+function build_shipping_contact($data)
+{
+    $shipping_contact = array(
+        "email" => (empty($data["card"]["shipping_email"]) ? $data["card"]["email"] : $data["card"]["shipping_email"]),
+        "phone" => (empty($data["card"]["shipping_phone"]) ? $data["card"]["phone"] : $data["card"]["shipping_phone"]),
+        "receiver" => $data["card"]["name"],
+        "address" => array(
+            "street1" => $data["card"]["shipping_address_line1"],
+            "street2" => $data["card"]["shipping_address_line2"],
+            "city"    => $data["card"]["shipping_address_city"],
+            "state"   => $data["card"]["shipping_address_state"],
+            "country" => $data["card"]["shipping_address_country"],
+            "zip"     => $data["card"]["shipping_address_zip"]
+        ),
+        "metadata" => array(
+            "soft_validations" => true
+        )
+    );
+
+    return $shipping_contact;
+}
+
+function build_customer_info($data)
+{
+    $customer_info = array(
+        "name"  => $data["card"]["name"],
+        "phone" => $data["card"]["phone"],
+        "email" => $data["card"]["email"],
+        "metadata" => array(
+            "soft_validations" => true
+        )
+
+    );
+
+    return $customer_info;
+}
 
 function build_details($data, $line_items)
 {
