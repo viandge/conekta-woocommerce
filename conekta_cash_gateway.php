@@ -175,12 +175,12 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
             \Conekta\Conekta::setApiKey($this->secret_key);
-            \Conekta\Conekta::setApiVersion("1.1.0");
-            \Conekta\Conekta::setPlugin("WooCommerce");
-            \Conekta\Conekta::setLocale("es");
+            \Conekta\Conekta::setApiVersion('1.1.0');
+            \Conekta\Conekta::setPlugin('WooCommerce');
+            \Conekta\Conekta::setLocale('es');
 
             $data             = getRequestData($this->order);
-            $amount           = $data["amount"];
+            $amount           = $data['amount'];
             $items            = $this->order->get_items();
             $taxes            = $this->order->get_taxes();
             $line_items       = build_line_items($items);
@@ -189,21 +189,28 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $shipping_contact = build_shipping_contact($data);
             $tax_lines        = build_tax_lines($taxes);
             $customer_info    = build_customer_info($data);
+//            $order_metadata   = build_order_metadata(); //aquí van las notas del customer
             $order_details    = array(
-                "currency"         => $data["currency"],
-                "line_items"       => $line_items,
-                "shipping_lines"   => $shipping_lines,
-                "shipping_contact" => $shipping_contact,
-                "customer_info"    => $customer_info,
-                "discount_lines"   => $discount_lines,
-                "tax_lines"        => $tax_lines
+                'currency'         => $data['currency'],
+                'line_items'       => $line_items,
+                'shipping_lines'   => $shipping_lines,
+                'shipping_contact' => $shipping_contact,
+                'customer_info'    => $customer_info
             );
+
+            if ($discount_lines != null) {
+                $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
+            }
+
+            if ($tax_lines != null) {
+                $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
+            }
 
             try {
                 $order          = \Conekta\Order::create($order_details);
                 $charge_details = array(
-                    "source" => array("type" => "oxxo_cash"),
-                    "amount" => $amount
+                    'source' => array('type' => 'oxxo_cash'),
+                    'amount' => $amount
                 );
 
                 $charge = $order->createCharge($charge_details);
