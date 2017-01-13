@@ -30,7 +30,7 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
 			$current_lang = explode("_", get_locale());
 			$this->lang = $current_lang[0];
 			$this->lang_messages = require_once("lang/" . $this->lang . ".php");
-			Conekta::setLocale($this->lang);
+			\Conekta\Conekta::setLocale($this->lang);
 		}
 
 		return $this;

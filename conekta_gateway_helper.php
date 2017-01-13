@@ -109,7 +109,6 @@ function build_customer_info($data)
         "metadata" => array(
             "soft_validations" => true
         )
-
     );
 
     return $customer_info;

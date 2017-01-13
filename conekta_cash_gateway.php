@@ -174,8 +174,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         {
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
-            //\Conekta\Conekta::setApiKey($this->secret_key);
-            \Conekta\Conekta::setApiKey('FAKIOXUSc4ca4238a0b9');
+            \Conekta\Conekta::setApiKey($this->secret_key);
             \Conekta\Conekta::setApiVersion("1.1.0");
             \Conekta\Conekta::setPlugin("WooCommerce");
             \Conekta\Conekta::setLocale("es");
