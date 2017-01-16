@@ -22,7 +22,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         public function __construct()
         {
             $this->id              = 'conektacash';
-            $this->method_title       = __( 'Conekta Cash', 'woocommerce' );
+            $this->method_title    = __( 'Conekta Cash', 'woocommerce' );
             $this->has_fields      = true;            
             $this->init_form_fields();
             $this->init_settings();
@@ -30,14 +30,14 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $this->description        = '';
             $this->icon               = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/cash.png';
             $this->usesandboxapi      = strcmp($this->settings['debug'], 'yes') == 0;
-            $this->testApiKey         = $this->settings['test_api_key'  ];
-            $this->liveApiKey         = $this->settings['live_api_key'  ];
+            $this->testApiKey         = $this->settings['test_api_key'];
+            $this->liveApiKey         = $this->settings['live_api_key'];
             $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
-            add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
-            add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ) );
-            add_action( 'woocommerce_email_before_order_table', array( $this, 'email_barcode' ) );
-            add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'webhook_handler' ) );  
+            add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
+            add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'));
+            add_action('woocommerce_email_before_order_table', array($this, 'email_barcode'));
+            add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'webhook_handler'));
         }
 
         /**
@@ -47,16 +47,16 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     public function webhook_handler() 
     {
         header('HTTP/1.1 200 OK');
-        $body = @file_get_contents('php://input');      
-        $event = json_decode($body);
-        $charge = $event->data->object;
+        $body     = @file_get_contents('php://input');
+        $event    = json_decode($body);
+        $charge   = $event->data->object;
         $order_id = $charge->reference_id;
-        $paid_at = date("Y-m-d", $charge->paid_at);
-        $order = new WC_Order( $order_id );
+        $paid_at  = date("Y-m-d", $charge->paid_at);
+        $order    = new WC_Order( $order_id );
 
         if (strpos($event->type, "charge.paid") !== false && $event->payment_method->type === "oxxo") 
         {
-            update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
+            update_post_meta($order->id, 'conekta-paid-at', $paid_at);
             $order->payment_complete();
             $order->add_order_note(sprintf("Payment completed in Oxxo and notification of payment received"));
 
@@ -125,7 +125,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $order = new WC_Order( $order_id );
 
             echo '<p><strong>'.__('Código de Barras').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" /></p>';
-            echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-barcode', true ). '</p>';
+            echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
         }
         
         /**
@@ -139,7 +139,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             if (get_post_meta( $order->id, 'conekta-barcodeurl', true ) != null)
             {
                     echo '<strong>'.__('Código Barra').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" />';
-                    echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-barcode', true ). '</p>';
+                    echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
             }
         }
         
@@ -174,32 +174,53 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         {
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
-            Conekta::setApiKey($this->secret_key);
-            Conekta::setLocale("es");
-            $data = getRequestData($this->order);
-            $line_items = array();
-            $items = $this->order->get_items();
-            $line_items = build_line_items($items);
-            $details = build_details($data,$line_items);
- 
+            \Conekta\Conekta::setApiKey($this->secret_key);
+            \Conekta\Conekta::setApiVersion('1.1.0');
+            \Conekta\Conekta::setPlugin('WooCommerce');
+            \Conekta\Conekta::setLocale('es');
+
+            $data             = getRequestData($this->order);
+            $amount           = $data['amount'];
+            $items            = $this->order->get_items();
+            $taxes            = $this->order->get_taxes();
+            $line_items       = build_line_items($items);
+            $discount_lines   = build_discount_lines($data);
+            $shipping_lines   = build_shipping_lines($data);
+            $shipping_contact = build_shipping_contact($data);
+            $tax_lines        = build_tax_lines($taxes);
+            $customer_info    = build_customer_info($data);
+//            $order_metadata   = build_order_metadata(); //aquí van las notas del customer
+            $order_details    = array(
+                'currency'         => $data['currency'],
+                'line_items'       => $line_items,
+                'shipping_lines'   => $shipping_lines,
+                'shipping_contact' => $shipping_contact,
+                'customer_info'    => $customer_info
+            );
+
+            if ($discount_lines != null) {
+                $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
+            }
+
+            if ($tax_lines != null) {
+                $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
+            }
+
             try {
-  
-                $charge = Conekta_Charge::create(array(
-                            "amount"=> $data['amount'],
-                            "currency"=> $data['currency'],
-                            "reference_id" => $this->order->id,
-                            "description"=> "Recibo de pago para orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
-                            "cash"=> array(
-                                "type"=>"oxxo"
-                            ),
-                            "details"=>$details
-                        ));
+                $order          = \Conekta\Order::create($order_details);
+                $charge_details = array(
+                    'source' => array('type' => 'oxxo_cash'),
+                    'amount' => $amount
+                );
+
+                $charge = $order->createCharge($charge_details);
+
                 $this->transactionId = $charge->id;
-                update_post_meta( $this->order->id, 'conekta-id', $charge->id );
-                update_post_meta( $this->order->id, 'conekta-creado', $charge->created_at );
-                update_post_meta( $this->order->id, 'conekta-expira', $charge->payment_method->expiry_date );
-                update_post_meta( $this->order->id, 'conekta-barcode', $charge->payment_method->barcode );
-                update_post_meta( $this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url );
+                update_post_meta($this->order->id, 'conekta-id',         $charge->id);
+                update_post_meta($this->order->id, 'conekta-creado',     $charge->created_at);
+                update_post_meta($this->order->id, 'conekta-expira',     $charge->payment_method->expiry_date);
+                update_post_meta($this->order->id, 'conekta-referencia', $charge->payment_method->reference);
+                update_post_meta($this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url);
                 return true;
                 
             } catch(Conekta_Error $e) {
