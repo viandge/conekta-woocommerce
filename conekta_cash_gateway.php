@@ -175,7 +175,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
             \Conekta\Conekta::setApiKey($this->secret_key);
-            \Conekta\Conekta::setApiVersion('1.1.0');
+            \Conekta\Conekta::setApiVersion('2.0.0');
             \Conekta\Conekta::setPlugin('WooCommerce');
             \Conekta\Conekta::setLocale('es');
 
@@ -209,7 +209,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             try {
                 $order          = \Conekta\Order::create($order_details);
                 $charge_details = array(
-                    'source' => array('type' => 'oxxo_cash'),
+                    'payment_source' => array('type' => 'oxxo_cash'),
                     'amount' => $amount
                 );
 

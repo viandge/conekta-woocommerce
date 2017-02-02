@@ -17,27 +17,16 @@ function build_line_items($items)
         $productmeta = new WC_Product($item['product_id']);
         $sku         = $productmeta->get_sku();
         $unit_price  = (floatval($item['line_subtotal']) * 1000) / floatval($item['qty']);
-        if ($productmeta->is_downloadable()) {
-            $type = 'downloadable';
-        } else {
-            if ($productmeta->is_virtual()) {
-                $type = 'service';
-            } else {
-                $type = 'physical';
-            }
-        }
         $line_items  = array_merge($line_items, array(array(
          'name'        => $item['name'],
          'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
-         'description' => $item['name'],
          'quantity'    => intval($item['qty']),
          'sku'         => $sku,
-         'type'        => $type,
          'tags'        => ['WooCommerce']
          ))
         );
     }
-    
+
     return $line_items;
 }
 
@@ -60,7 +49,9 @@ function build_tax_lines($taxes)
 
 function build_shipping_lines($data)
 {
-    $shipping_lines = $data['shipping_lines'];
+    if(!empty($data['shipping_lines'])) {
+        $shipping_lines = $data['shipping_lines'];
+    }
 
     return $shipping_lines;
 }
@@ -104,7 +95,7 @@ function getRequestData($order)
         foreach($order_coupons as $index => $coupon) {
             $discount_lines = array_merge($discount_lines, array(array(
                 'description' => $coupon['name'],
-                'kind'        => $coupon['type'],
+                'type'        => $coupon['type'],
                 'amount'      => $coupon['discount_amount'] * 100
             )));
         }
@@ -113,7 +104,6 @@ function getRequestData($order)
         $shipping_method = $order->get_shipping_method();
         $shipping_lines  = array(
             array(
-                'description' => $shipping_method,
                 'amount'      => (float)$order->get_total_shipping() * 100,
                 'carrier'     => $shipping_method,
                 'method'      => $shipping_method
@@ -122,16 +112,15 @@ function getRequestData($order)
 
         // Shipping Contact
         $shipping_contact = array(
-            'email'    => $order->billing_email,
             'phone'    => $order->billing_phone,
             'receiver' => sprintf('%s %s', $order->shipping_first_name, $order->shipping_last_name),
             'address' => array(
-                'street1' => $order->shipping_address_1,
-                'street2' => $order->shipping_address_2,
-                'city'    => $order->shipping_city,
-                'state'   => $order->shipping_state,
-                'country' => $order->shipping_country,
-                'zip'     => $order->shipping_postcode
+                'street1'     => $order->shipping_address_1,
+                'street2'     => $order->shipping_address_2,
+                'city'        => $order->shipping_city,
+                'state'       => $order->shipping_state,
+                'country'     => $order->shipping_country,
+                'postal_code' => $order->shipping_postcode
             ),
         );
 
