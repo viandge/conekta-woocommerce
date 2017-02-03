@@ -185,10 +185,13 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             $order_details    = array(
                 'currency'         => $data['currency'],
                 'line_items'       => $line_items,
-                'shipping_lines'   => $shipping_lines,
                 'shipping_contact' => $shipping_contact,
                 'customer_info'    => $customer_info
             );
+
+            if (isset($shipping_lines)) {
+                $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
+            }
 
             if ($discount_lines != null) {
                 $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
@@ -211,7 +214,6 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 update_post_meta( $this->order->id, 'conekta-expira', $charge->payment_method->expiry_date );
                 update_post_meta( $this->order->id, 'conekta-clabe', $charge->payment_method->clabe );
                 return true;
-                
             } catch(Conekta_Error $e) {
                 $description = $e->message_to_purchaser;
 

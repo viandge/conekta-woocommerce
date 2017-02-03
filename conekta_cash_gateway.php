@@ -193,10 +193,13 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $order_details    = array(
                 'currency'         => $data['currency'],
                 'line_items'       => $line_items,
-                'shipping_lines'   => $shipping_lines,
-                'shipping_contact' => $shipping_contact,
-                'customer_info'    => $customer_info
+                'customer_info'    => $customer_info,
+                'shipping_contact' => $shipping_contact
             );
+
+            if (isset($shipping_lines)) {
+                $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
+            }
 
             if ($discount_lines != null) {
                 $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
@@ -222,7 +225,6 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 update_post_meta($this->order->id, 'conekta-referencia', $charge->payment_method->reference);
                 update_post_meta($this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url);
                 return true;
-                
             } catch(Conekta_Error $e) {
                 $description = $e->message_to_purchaser;
 

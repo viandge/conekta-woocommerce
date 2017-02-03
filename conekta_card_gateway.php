@@ -149,7 +149,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         \Conekta\Conekta::setApiVersion('2.0.0');
         \Conekta\Conekta::setPlugin('WooCommerce');
         \Conekta\Conekta::setLocale('es');
-        
+
         $data             = getRequestData($this->order);
         $amount           = $data['amount'];
         $items            = $this->order->get_items();
@@ -164,10 +164,13 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         $order_details    = array(
             'currency'         => $data['currency'],
             'line_items'       => $line_items,
-            'shipping_lines'   => $shipping_lines,
             'shipping_contact' => $shipping_contact,
             'customer_info'    => $customer_info
         );
+        if (isset($shipping_lines)) {
+            $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
+        }
+
         if ($discount_lines != null) {
             $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
         }
@@ -186,10 +189,10 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
                 'amount' => $amount
             );
 
-            // $monthly_installments = $data['monthly_installments'];
-            // if ($monthly_installments > 1) {
-            //     $charge_details = array_merge($charge_details, array('monthly_installments' => $monthly_installments));
-            // }
+            $monthly_installments = $data['monthly_installments'];
+            if ($monthly_installments > 1) {
+                $charge_details = array_merge($charge_details, array('monthly_installments' => $monthly_installments));
+            }
 
             $charge = $order->createCharge($charge_details);
 
