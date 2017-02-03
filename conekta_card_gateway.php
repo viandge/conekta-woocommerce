@@ -48,6 +48,10 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         if (!$this->validateCurrency()) {
             $this->enabled = false;
         }
+
+        if(empty($this->secret_key)) {
+          $this->enabled = false;
+        }
     }
 
     /**
