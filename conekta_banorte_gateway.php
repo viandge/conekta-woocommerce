@@ -187,7 +187,7 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
             $shipping_contact = build_shipping_contact($data);
             $tax_lines        = build_tax_lines($taxes);
             $customer_info    = build_customer_info($data);
- //            $order_metadata   = build_order_metadata(); //aquí van las notas del customer
+            $order_metadata   = build_order_metadata($data);
             $order_details    = array(
                 'currency'         => $data['currency'],
                 'line_items'       => $line_items,
@@ -206,6 +206,11 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
             if ($tax_lines != null) {
                 $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
             }
+
+            if (isset($order_metadata)) {
+                $order_details = array_merge($order_details, array('metadata' => $order_metadata));
+            }
+
             try {
                 $order          = \Conekta\Order::create($order_details);
                 $charge_details = array(

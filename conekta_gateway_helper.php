@@ -10,6 +10,17 @@
  * Build the line items hash
  * @param array $items
  */
+function build_order_metadata($data)
+{
+    $metadata = array();
+
+    if (isset($data['customer_message'])) {
+        $metadata = array_merge($data, array('customer_message' => $data['customer_message']));
+    }
+
+    return $metadata;
+}
+
 function build_line_items($items)
 {
     $line_items = array();
@@ -72,6 +83,13 @@ function build_shipping_contact($data)
     return $shipping_contact;
 }
 
+function build_fiscal_entity($data)
+{
+    $fiscal_entity = array_merge($data['shipping_contact'], array('metadata' => array('soft_validations' => true)));
+
+    return $fiscal_entity;
+}
+
 function build_customer_info($data)
 {
     $customer_info = array_merge($data['customer_info'], array('metadata' => array('soft_validations' => true)));
@@ -124,9 +142,26 @@ function getRequestData($order)
             ),
         );
 
+        $customer_name = sprintf('%s %s', $order->billing_first_name, $order->billing_last_name);
+
+        // Fiscal Entity
+        $fical_entity = array(
+            'name'    => $order->billing_company || $customer_name,
+            'address' => array(
+                'street1'     => $order->billing_address_1,
+                'street2'     => $order->billing_address_2,
+                'phone'       => $order->billing_phone,
+                'email'       => $order->billing_email,
+                'city'        => $order->billing_city,
+                'postal_code' => $order->billing_postcode,
+                'state'       => $order->billing_state,
+                'country'     => $order->billing_country
+            )
+        );
+
         // Customer Info
         $customer_info = array(
-            'name'  => sprintf('%s %s', $order->billing_first_name, $order->billing_last_name),
+            'name'  => $customer_name,
             'phone' => $order->billing_phone,
             'email' => $order->billing_email
         );
@@ -140,6 +175,10 @@ function getRequestData($order)
             'customer_info'        => $customer_info,
             'shipping_contact'     => $shipping_contact
         );
+
+        if(!empty($order->customer_message)) {
+            $data = array_merge($data, array('customer_message' => $order->customer_message));
+        }
 
         if(!empty($discount_lines)) {
             $data = array_merge($data, array('discount_lines' => $discount_lines));

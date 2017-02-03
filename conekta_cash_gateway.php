@@ -159,17 +159,17 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 }
             }
         }
-        
+
         public function admin_options()
         {
             include_once('templates/cash_admin.php');
         }
-        
+
         public function payment_fields()
         {
             include_once('templates/cash.php');
         }
-        
+
         protected function send_to_conekta()
         {
             global $woocommerce;
@@ -189,7 +189,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $shipping_contact = build_shipping_contact($data);
             $tax_lines        = build_tax_lines($taxes);
             $customer_info    = build_customer_info($data);
-//            $order_metadata   = build_order_metadata(); //aquí van las notas del customer
+            $order_metadata   = build_order_metadata($data);
             $order_details    = array(
                 'currency'         => $data['currency'],
                 'line_items'       => $line_items,
@@ -201,12 +201,16 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
             }
 
-            if ($discount_lines != null) {
+            if (isset($discount_lines)) {
                 $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
             }
 
-            if ($tax_lines != null) {
+            if (isset($tax_lines)) {
                 $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
+            }
+
+            if (isset($order_metadata)) {
+                $order_details = array_merge($order_details, array('metadata' => $order_metadata));
             }
 
             try {
