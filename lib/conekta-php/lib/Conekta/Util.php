@@ -23,7 +23,7 @@ abstract class Util
         'event'                       => '\Conekta\Event',
         'plan'                        => '\Conekta\Plan',
         'subscription'                => '\Conekta\Subscription',
-        'source'                      => '\Conekta\Source',
+        'payment_source'              => '\Conekta\PaymentSource',
         'tax_line'                    => '\Conekta\TaxLine',
         'shipping_line'               => '\Conekta\ShippingLine',
         'discount_line'               => '\Conekta\DiscountLine',
@@ -33,7 +33,8 @@ abstract class Util
         'line_item'                   => '\Conekta\LineItem',
         'order'                       => '\Conekta\Order',
         'fiscal_entity'               => '\Conekta\FiscalEntity',
-        'return'                      => '\Conekta\OrderReturn'
+        'return'                      => '\Conekta\OrderReturn',
+        'token'                       => '\Conekta\Token'
     );
 
     public static function convertToConektaObject($resp)

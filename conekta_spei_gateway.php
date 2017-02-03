@@ -167,7 +167,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
             \Conekta\Conekta::setApiKey($this->secret_key);
-            \Conekta\Conekta::setApiVersion('1.1.0');
+            \Conekta\Conekta::setApiVersion('2.0.0');
             \Conekta\Conekta::setPlugin('WooCommerce');
             \Conekta\Conekta::setLocale('es');
 
@@ -181,14 +181,17 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             $shipping_contact = build_shipping_contact($data);
             $tax_lines        = build_tax_lines($taxes);
             $customer_info    = build_customer_info($data);
-//            $order_metadata   = build_order_metadata(); //aquí van las notas del customer
+            $order_metadata   = build_order_metadata($data);
             $order_details    = array(
                 'currency'         => $data['currency'],
                 'line_items'       => $line_items,
-                'shipping_lines'   => $shipping_lines,
                 'shipping_contact' => $shipping_contact,
                 'customer_info'    => $customer_info
             );
+
+            if (isset($shipping_lines)) {
+                $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
+            }
 
             if ($discount_lines != null) {
                 $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
@@ -197,10 +200,15 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             if ($tax_lines != null) {
                 $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
             }
+
+            if (isset($order_metadata)) {
+                $order_details = array_merge($order_details, array('metadata' => $order_metadata));
+            }
+
             try {
                 $order          = \Conekta\Order::create($order_details);
                 $charge_details = array(
-                    'source' => array('type' => 'spei'),
+                    'payment_source' => array('type' => 'spei'),
                     'amount' => $amount
                 );
 
@@ -211,7 +219,6 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 update_post_meta( $this->order->id, 'conekta-expira', $charge->payment_method->expiry_date );
                 update_post_meta( $this->order->id, 'conekta-clabe', $charge->payment_method->clabe );
                 return true;
-                
             } catch(Conekta_Error $e) {
                 $description = $e->message_to_purchaser;
 

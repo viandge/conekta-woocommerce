@@ -159,23 +159,23 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 }
             }
         }
-        
+
         public function admin_options()
         {
             include_once('templates/cash_admin.php');
         }
-        
+
         public function payment_fields()
         {
             include_once('templates/cash.php');
         }
-        
+
         protected function send_to_conekta()
         {
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
             \Conekta\Conekta::setApiKey($this->secret_key);
-            \Conekta\Conekta::setApiVersion('1.1.0');
+            \Conekta\Conekta::setApiVersion('2.0.0');
             \Conekta\Conekta::setPlugin('WooCommerce');
             \Conekta\Conekta::setLocale('es');
 
@@ -189,27 +189,34 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $shipping_contact = build_shipping_contact($data);
             $tax_lines        = build_tax_lines($taxes);
             $customer_info    = build_customer_info($data);
-//            $order_metadata   = build_order_metadata(); //aquí van las notas del customer
+            $order_metadata   = build_order_metadata($data);
             $order_details    = array(
                 'currency'         => $data['currency'],
                 'line_items'       => $line_items,
-                'shipping_lines'   => $shipping_lines,
-                'shipping_contact' => $shipping_contact,
-                'customer_info'    => $customer_info
+                'customer_info'    => $customer_info,
+                'shipping_contact' => $shipping_contact
             );
 
-            if ($discount_lines != null) {
+            if (isset($shipping_lines)) {
+                $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
+            }
+
+            if (isset($discount_lines)) {
                 $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
             }
 
-            if ($tax_lines != null) {
+            if (isset($tax_lines)) {
                 $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
+            }
+
+            if (isset($order_metadata)) {
+                $order_details = array_merge($order_details, array('metadata' => $order_metadata));
             }
 
             try {
                 $order          = \Conekta\Order::create($order_details);
                 $charge_details = array(
-                    'source' => array('type' => 'oxxo_cash'),
+                    'payment_source' => array('type' => 'oxxo_cash'),
                     'amount' => $amount
                 );
 
@@ -222,7 +229,6 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 update_post_meta($this->order->id, 'conekta-referencia', $charge->payment_method->reference);
                 update_post_meta($this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url);
                 return true;
-                
             } catch(Conekta_Error $e) {
                 $description = $e->message_to_purchaser;
 

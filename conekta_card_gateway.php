@@ -145,28 +145,60 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
     {
         global $woocommerce;
         include_once('conekta_gateway_helper.php');
-        Conekta::setApiKey($this->secret_key);
-        Conekta::setLocale("es");
-        Conekta::setApiVersion("1.0.0");
-        
-        $data = getRequestData($this->order);
+        \Conekta\Conekta::setApiKey($this->secret_key);
+        \Conekta\Conekta::setApiVersion('2.0.0');
+        \Conekta\Conekta::setPlugin('WooCommerce');
+        \Conekta\Conekta::setLocale('es');
+
+        $data             = getRequestData($this->order);
+        $amount           = $data['amount'];
+        $items            = $this->order->get_items();
+        $taxes            = $this->order->get_taxes();
+        $line_items       = build_line_items($items);
+        $discount_lines   = build_discount_lines($data);
+        $shipping_lines   = build_shipping_lines($data);
+        $shipping_contact = build_shipping_contact($data);
+        $tax_lines        = build_tax_lines($taxes);
+        $customer_info    = build_customer_info($data);
+        $order_metadata   = build_order_metadata($data);
+        $order_details    = array(
+            'currency'         => $data['currency'],
+            'line_items'       => $line_items,
+            'shipping_contact' => $shipping_contact,
+            'customer_info'    => $customer_info
+        );
+        if (isset($shipping_lines)) {
+            $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
+        }
+
+        if ($discount_lines != null) {
+            $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
+        }
+
+        if ($tax_lines != null) {
+            $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
+        }
+
+        if (isset($order_metadata)) {
+            $order_details = array_merge($order_details, array('metadata' => $order_metadata));
+        }
 
         try {
+            $order          = \Conekta\Order::create($order_details);
+            $charge_details = array(
+                'payment_source' => array(
+                    'type'     => 'card',
+                    'token_id' => $data['token']
+                ),
+                'amount' => $amount
+            );
 
-            $line_items = array();
-            $items = $this->order->get_items();
-            $line_items = build_line_items($items);
-            $details = build_details($data, $line_items);
+            $monthly_installments = $data['monthly_installments'];
+            if ($monthly_installments > 1) {
+                $charge_details = array_merge($charge_details, array('monthly_installments' => $monthly_installments));
+            }
 
-            $charge = Conekta_Charge::create(array(
-                "amount"      => $data['amount'],
-                "currency"    => $data['currency'],
-                "monthly_installments" => $data['monthly_installments'] > 1 ? $data['monthly_installments'] : null,
-                "card"        => $data['token'],
-                "reference_id" => $this->order->id,
-                "description" => "Compra con orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
-                "details"     => $details,
-                ));
+            $charge = $order->createCharge($charge_details);
 
             $this->transactionId = $charge->id;
             if ($data['monthly_installments'] > 1) {
