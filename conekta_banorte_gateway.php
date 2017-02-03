@@ -172,26 +172,53 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
         {
             global $woocommerce;
             include_once('conekta_gateway_helper.php');
-            Conekta::setApiKey($this->secret_key);
-            Conekta::setLocale("es");
+            \Conekta\Conekta::setApiKey($this->secret_key);
+            \Conekta\Conekta::setApiVersion('2.0.0');
+            \Conekta\Conekta::setPlugin('WooCommerce');
+            \Conekta\Conekta::setLocale('es');
+
             $data = getRequestData($this->order);
-            $line_items = array();
-            $items = $this->order->get_items();
-            $line_items = build_line_items($items);
-            $details = build_details($data,$line_items);
- 
+            $amount           = $data['amount'];
+            $items            = $this->order->get_items();
+            $taxes            = $this->order->get_taxes();
+            $line_items       = build_line_items($items);
+            $discount_lines   = build_discount_lines($data);
+            $shipping_lines   = build_shipping_lines($data);
+            $shipping_contact = build_shipping_contact($data);
+            $tax_lines        = build_tax_lines($taxes);
+            $customer_info    = build_customer_info($data);
+            $order_metadata   = build_order_metadata($data);
+            $order_details    = array(
+                'currency'         => $data['currency'],
+                'line_items'       => $line_items,
+                'shipping_contact' => $shipping_contact,
+                'customer_info'    => $customer_info
+            );
+
+            if (isset($shipping_lines)) {
+                $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
+            }
+
+            if ($discount_lines != null) {
+                $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
+            }
+
+            if ($tax_lines != null) {
+                $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
+            }
+
+            if (isset($order_metadata)) {
+                $order_details = array_merge($order_details, array('metadata' => $order_metadata));
+            }
+
             try {
-  
-                $charge = Conekta_Charge::create(array(
-                            "amount"=> $data['amount'],
-                            "currency"=> $data['currency'],
-                            "reference_id" => $this->order->id,
-                            "description"=> "Recibo de pago para orden # ". $this->order->id . " desde Woocommerce v" . $this->version,
-                            "bank"=> array(
-                                "type"=>"banorte"
-                            ),
-                            "details"=>$details
-                        ));
+                $order          = \Conekta\Order::create($order_details);
+                $charge_details = array(
+                    'payment_source' => array('type' => 'banorte'),
+                    'amount' => $amount
+                );
+
+                $charge = $order->createCharge($charge_details);
                 $this->transactionId = $charge->id;
                 update_post_meta( $this->order->id, 'conekta-id', $charge->id );
                 update_post_meta( $this->order->id, 'conekta-creado', $charge->created_at );
@@ -200,7 +227,6 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
                 update_post_meta( $this->order->id, 'conekta-servicenumber', $charge->payment_method->service_number );
                 update_post_meta( $this->order->id, 'conekta-reference', $charge->payment_method->reference );
                 return true;
-                
             } catch(Conekta_Error $e) {
                 $description = $e->message_to_purchaser;
 
@@ -214,7 +240,7 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
                 return false;
             }
         }
-        
+
         public function process_payment($order_id)
         {
             global $woocommerce;
