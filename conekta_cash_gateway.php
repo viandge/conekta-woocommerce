@@ -40,7 +40,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
         add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
         add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'));
-        add_action('woocommerce_email_before_order_table', array($this, 'email_barcode'));
+        add_action('woocommerce_email_before_order_table', array($this, 'email_reference'));
         add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'webhook_handler'));
     }
 
@@ -128,7 +128,6 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     function thankyou_page($order_id) {
         $order = new WC_Order( $order_id );
 
-        echo '<p><strong>'.__('Código de Barras').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" /></p>';
         echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
     }
 
@@ -138,11 +137,10 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
      * @access public
      * @param WC_Order $order
      */
-    function email_barcode($order) {
 
-        if (get_post_meta( $order->id, 'conekta-barcodeurl', true ) != null)
+    function email_reference($order) {
+        if (get_post_meta( $order->id, 'conekta-referencia', true ) != null)
             {
-                echo '<strong>'.__('Código Barra').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" />';
                 echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
             }
     }
@@ -240,7 +238,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             update_post_meta($this->order->id, 'conekta-creado',     $charge->created_at);
             update_post_meta($this->order->id, 'conekta-expira',     $charge->payment_method->expiry_date);
             update_post_meta($this->order->id, 'conekta-referencia', $charge->payment_method->reference);
-            update_post_meta($this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url);
+
             return true;
         } catch(Conekta_Error $e) {
             $description = $e->message_to_purchaser;
