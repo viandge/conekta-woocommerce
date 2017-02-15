@@ -32,10 +32,13 @@ function build_line_items($items)
          'name'        => $item['name'],
          'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
          'quantity'    => intval($item['qty']),
-         'sku'         => $sku,
          'tags'        => ['WooCommerce']
          ))
         );
+
+        if (isset($sku)) {
+            $line_items = array_merge($line_items, array('sku' => $sku));
+        }
     }
 
     return $line_items;
