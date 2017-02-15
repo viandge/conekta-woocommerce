@@ -15,8 +15,8 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     protected $order                      = null;
     protected $transactionId              = null;
     protected $transactionErrorMessage    = null;
-    protected $conektaTestApiKey           = '';
-    protected $conektaLiveApiKey           = '';
+    protected $conektaTestApiKey          = '';
+    protected $conektaLiveApiKey          = '';
     protected $publishable_key            = '';
 
     public function __construct()
@@ -107,15 +107,15 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             'description' => array(
                 'title' => __( 'Description', 'woocommerce' ),
                 'type' => 'textarea',
-                'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-                'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando el código de barras que se encuentra a continuación (si no te es posible verlo acepta las imágenes de este correo).', 'woocommerce' ),
+                'description' => __('Payment method description that the customer will see on your checkout.', 'woocommerce'),
+                'default' =>__('Por favor realiza el pago en el OXXO más cercano utilizando la referencia que se encuentra a continuación.', 'woocommerce' ),
                 'desc_tip' => true,
             ),
             'instructions' => array(
                 'title' => __( 'Instructions', 'woocommerce' ),
                 'type' => 'textarea',
-                'description' => __( 'Instructions that will be added to the thank you page and emails.', 'woocommerce' ),
-                'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando el código de barras que se encuentra a continuación (si no te es posible verlo acepta las imágenes de este correo).', 'woocommerce' ),
+                'description' => __('Instructions that will be added to the thank you page and emails.', 'woocommerce'),
+                'default' =>__('Por favor realiza el pago en el OXXO más cercano utilizando la referencia que se encuentra a continuación.', 'woocommerce'),
                 'desc_tip' => true,
             ),
         );
@@ -128,7 +128,10 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     function thankyou_page($order_id) {
         $order = new WC_Order( $order_id );
 
-        echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+        echo '<p style="font-size: 30px"><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+        echo '<p>OXXO cobrará una comisión adicional al momento de realizar el pago.</p>';
+                echo '<p>INSTRUCCIONES:<ol><li>Acude a la tienda OXXO más cercana.</li><li>Inidica en caja que quieres realizar un pago de <b>OXXOPay</b>.</li><li>Dicta al cajero el número de referencia en esta ficha para que la tecleé directamente en la pantalla de venta.</li><li>Realiza el pago correspondiente con dinero en efectivo.</li><li>Al confirmar tu pago, el cajero te entregará un comprobante impreso. <b>En él podrás verificar que se haya realizado correctamente</b>. Conserva este comprobante de pago.</li></ol>';
+
     }
 
     /**
@@ -141,7 +144,9 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     function email_reference($order) {
         if (get_post_meta( $order->id, 'conekta-referencia', true ) != null)
             {
-                echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+                echo '<p style="font-size: 30px"><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+                echo '<p>OXXO cobrará una comisión adicional al momento de realizar el pago.</p>';
+                echo '<p>INSTRUCCIONES:<ol><li>Acude a la tienda OXXO más cercana.</li><li>Inidica en caja que quieres realizar un pago de <b>OXXOPay</b>.</li><li>Dicta al cajero el número de referencia en esta ficha para que la tecleé directamente en la pantalla de venta.</li><li>Realiza el pago correspondiente con dinero en efectivo.</li><li>Al confirmar tu pago, el cajero te entregará un comprobante impreso. <b>En él podrás verificar que se haya realizado correctamente</b>. Conserva este comprobante de pago.</li></ol>';
             }
     }
 
