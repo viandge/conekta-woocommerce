@@ -217,7 +217,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             update_post_meta($this->order->id, 'conekta-order-id', $order->id);
 
             $charge_details = array(
-                'payment_source' => array('type' => 'spei'),
+                'payment_method' => array('type' => 'spei'),
                 'amount'         => $amount
             );
 
