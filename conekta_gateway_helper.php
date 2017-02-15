@@ -28,14 +28,18 @@ function build_line_items($items)
         $productmeta = new WC_Product($item['product_id']);
         $sku         = $productmeta->get_sku();
         $unit_price  = (floatval($item['line_subtotal']) * 1000) / floatval($item['qty']);
-        $line_items  = array_merge($line_items, array(array(
-         'name'        => $item['name'],
-         'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
-         'quantity'    => intval($item['qty']),
-         'sku'         => $sku,
-         'tags'        => ['WooCommerce']
-         ))
+        $line_item_params = array(
+            'name'        => $item['name'],
+            'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
+            'quantity'    => intval($item['qty']),
+            'tags'        => ['WooCommerce']
         );
+
+        if (isset($sku)) {
+            array_push($line_item_params, array('sku' => $sku));
+        }
+
+        $line_items = array_merge($line_items, array($line_item_params));
     }
 
     return $line_items;

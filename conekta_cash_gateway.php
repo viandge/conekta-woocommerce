@@ -15,8 +15,8 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     protected $order                      = null;
     protected $transactionId              = null;
     protected $transactionErrorMessage    = null;
-    protected $conektaTestApiKey           = '';
-    protected $conektaLiveApiKey           = '';
+    protected $conektaTestApiKey          = '';
+    protected $conektaLiveApiKey          = '';
     protected $publishable_key            = '';
 
     public function __construct()
@@ -40,7 +40,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
         add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
         add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'));
-        add_action('woocommerce_email_before_order_table', array($this, 'email_barcode'));
+        add_action('woocommerce_email_before_order_table', array($this, 'email_reference'));
         add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'webhook_handler'));
     }
 
@@ -107,15 +107,15 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             'description' => array(
                 'title' => __( 'Description', 'woocommerce' ),
                 'type' => 'textarea',
-                'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-                'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando el código de barras que se encuentra a continuación (si no te es posible verlo acepta las imágenes de este correo).', 'woocommerce' ),
+                'description' => __('Payment method description that the customer will see on your checkout.', 'woocommerce'),
+                'default' =>__('Por favor realiza el pago en el OXXO más cercano utilizando la referencia que se encuentra a continuación.', 'woocommerce' ),
                 'desc_tip' => true,
             ),
             'instructions' => array(
                 'title' => __( 'Instructions', 'woocommerce' ),
                 'type' => 'textarea',
-                'description' => __( 'Instructions that will be added to the thank you page and emails.', 'woocommerce' ),
-                'default' =>__( 'Por favor realiza el pago en el OXXO más cercano utilizando el código de barras que se encuentra a continuación (si no te es posible verlo acepta las imágenes de este correo).', 'woocommerce' ),
+                'description' => __('Instructions that will be added to the thank you page and emails.', 'woocommerce'),
+                'default' =>__('Por favor realiza el pago en el OXXO más cercano utilizando la referencia que se encuentra a continuación.', 'woocommerce'),
                 'desc_tip' => true,
             ),
         );
@@ -128,8 +128,10 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     function thankyou_page($order_id) {
         $order = new WC_Order( $order_id );
 
-        echo '<p><strong>'.__('Código de Barras').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" /></p>';
-        echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+        echo '<p style="font-size: 30px"><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+        echo '<p>OXXO cobrará una comisión adicional al momento de realizar el pago.</p>';
+                echo '<p>INSTRUCCIONES:<ol><li>Acude a la tienda OXXO más cercana.</li><li>Inidica en caja que quieres realizar un pago de <b>OXXOPay</b>.</li><li>Dicta al cajero el número de referencia en esta ficha para que la tecleé directamente en la pantalla de venta.</li><li>Realiza el pago correspondiente con dinero en efectivo.</li><li>Al confirmar tu pago, el cajero te entregará un comprobante impreso. <b>En él podrás verificar que se haya realizado correctamente</b>. Conserva este comprobante de pago.</li></ol>';
+
     }
 
     /**
@@ -138,12 +140,13 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
      * @access public
      * @param WC_Order $order
      */
-    function email_barcode($order) {
 
-        if (get_post_meta( $order->id, 'conekta-barcodeurl', true ) != null)
+    function email_reference($order) {
+        if (get_post_meta( $order->id, 'conekta-referencia', true ) != null)
             {
-                echo '<strong>'.__('Código Barra').':</strong> <img src="' . get_post_meta( $order->id, 'conekta-barcodeurl', true ). '" />';
-                echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+                echo '<p style="font-size: 30px"><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+                echo '<p>OXXO cobrará una comisión adicional al momento de realizar el pago.</p>';
+                echo '<p>INSTRUCCIONES:<ol><li>Acude a la tienda OXXO más cercana.</li><li>Inidica en caja que quieres realizar un pago de <b>OXXOPay</b>.</li><li>Dicta al cajero el número de referencia en esta ficha para que la tecleé directamente en la pantalla de venta.</li><li>Realiza el pago correspondiente con dinero en efectivo.</li><li>Al confirmar tu pago, el cajero te entregará un comprobante impreso. <b>En él podrás verificar que se haya realizado correctamente</b>. Conserva este comprobante de pago.</li></ol>';
             }
     }
 
@@ -218,10 +221,19 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         }
 
         try {
-            $order          = \Conekta\Order::create($order_details);
+            $conekta_order_id = get_post_meta($this->order->id, 'conekta-order-id', true);
+            if (!empty($conekta_order_id)) {
+                $order = \Conekta\Order::find($conekta_order_id);
+                $order->update($order_details);
+            } else {
+                $order = \Conekta\Order::create($order_details);
+            }
+
+            update_post_meta($this->order->id, 'conekta-order-id', $order->id);
+
             $charge_details = array(
                 'payment_source' => array('type' => 'oxxo_cash'),
-                'amount' => $amount
+                'amount'         => $amount
             );
 
             $charge = $order->createCharge($charge_details);
@@ -231,7 +243,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             update_post_meta($this->order->id, 'conekta-creado',     $charge->created_at);
             update_post_meta($this->order->id, 'conekta-expira',     $charge->payment_method->expiry_date);
             update_post_meta($this->order->id, 'conekta-referencia', $charge->payment_method->reference);
-            update_post_meta($this->order->id, 'conekta-barcodeurl', $charge->payment_method->barcode_url);
+
             return true;
         } catch(Conekta_Error $e) {
             $description = $e->message_to_purchaser;

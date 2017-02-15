@@ -15,8 +15,8 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
     protected $order                      = null;
     protected $transactionId              = null;
     protected $transactionErrorMessage    = null;
-    protected $conektaTestApiKey           = '';
-    protected $conektaLiveApiKey           = '';
+    protected $conektaTestApiKey          = '';
+    protected $conektaLiveApiKey          = '';
     protected $publishable_key            = '';
 
     public function __construct()
@@ -34,10 +34,10 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
         $this->liveApiKey       = $this->settings['live_api_key'  ];
         $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
         add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
-        add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
-        add_action( 'woocommerce_email_before_order_table', array( $this, 'email_reference' ) );
-        add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ) );
-        add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'webhook_handler' ) );
+        add_action('woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page'));
+        add_action('woocommerce_email_before_order_table', array( $this, 'email_reference'));
+        add_action('woocommerce_email_before_order_table', array( $this, 'email_instructions'));
+        add_action('woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'webhook_handler'));
 
         if (empty($this->secret_key)) {
             $this->enabled = false;
@@ -104,15 +104,15 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
             'description' => array(
                 'title' => __( 'Description', 'woocommerce' ),
                 'type' => 'textarea',
-                'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-                'default' =>__( 'Por favor realiza el pago en una sucursal Banorte utilizando los datos que te enviamos por correo.', 'woocommerce' ),
+                'description' => __('Payment method description that the customer will see on your checkout.', 'woocommerce'),
+                'default' =>__('Por favor realiza el pago en una sucursal Banorte utilizando los datos que te enviamos por correo.', 'woocommerce'),
                 'desc_tip' => true,
             ),
             'instructions' => array(
                 'title' => __( 'Instructions', 'woocommerce' ),
                 'type' => 'textarea',
-                'description' => __( 'Instructions that will be added to the thank you page and emails.', 'woocommerce' ),
-                'default' =>__( 'Por favor realiza el pago en una sucursal Banorte utilizando los datos que te enviamos por correo.', 'woocommerce' ),
+                'description' => __('Instructions that will be added to the thank you page and emails.', 'woocommerce'),
+                'default' =>__('Por favor realiza el pago en una sucursal Banorte utilizando los datos que te enviamos por correo.', 'woocommerce'),
                 'desc_tip' => true,
             ),
         );
@@ -123,7 +123,7 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
      * @param string $order_id
      */
     function thankyou_page($order_id) {
-        $order = new WC_Order( $order_id );
+        $order = new WC_Order($order_id);
         echo '<p><strong>'.__('Nombre de servicio').':</strong> ' . get_post_meta( $order->id, 'conekta-servicename', true ). '</p>';
         echo '<p><strong>'.__('Número de servicio').':</strong> ' . get_post_meta( $order->id, 'conekta-servicenumber', true ). '</p>';
         echo '<p><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-reference', true ). '</p>';
@@ -181,7 +181,7 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
         \Conekta\Conekta::setPlugin('WooCommerce');
         \Conekta\Conekta::setLocale('es');
 
-        $data = getRequestData($this->order);
+        $data             = getRequestData($this->order);
         $amount           = $data['amount'];
         $items            = $this->order->get_items();
         $taxes            = $this->order->get_taxes();
@@ -216,20 +216,30 @@ class WC_Conekta_Banorte_Gateway extends WC_Conekta_Plugin
         }
 
         try {
-            $order          = \Conekta\Order::create($order_details);
-            $charge_details = array(
+            $conekta_order_id = get_post_meta($this->order->id, 'conekta-order-id', true);
+            if (!empty($conekta_order_id)) {
+                $order = \Conekta\Order::find($conekta_order_id);
+                $order->update($order_details);
+            } else {
+                $order = \Conekta\Order::create($order_details);
+            }
+
+            update_post_meta($this->order->id, 'conekta-order-id', $order->id);
+
+            $charge_details       = array(
                 'payment_source' => array('type' => 'banorte'),
-                'amount' => $amount
+                'amount'         => $amount
             );
 
-            $charge = $order->createCharge($charge_details);
-            $this->transactionId = $charge->id;
-            update_post_meta( $this->order->id, 'conekta-id', $charge->id );
-            update_post_meta( $this->order->id, 'conekta-creado', $charge->created_at );
-            update_post_meta( $this->order->id, 'conekta-expira', $charge->payment_method->expiry_date );
-            update_post_meta( $this->order->id, 'conekta-servicename', $charge->payment_method->service_name );
-            update_post_meta( $this->order->id, 'conekta-servicenumber', $charge->payment_method->service_number );
-            update_post_meta( $this->order->id, 'conekta-reference', $charge->payment_method->reference );
+            $charge               = $order->createCharge($charge_details);
+            $this->transactionId  = $charge->id;
+
+            update_post_meta($this->order->id, 'conekta-id', $charge->id );
+            update_post_meta($this->order->id, 'conekta-creado', $charge->created_at );
+            update_post_meta($this->order->id, 'conekta-expira', $charge->payment_method->expiry_date );
+            update_post_meta($this->order->id, 'conekta-servicename', $charge->payment_method->service_name );
+            update_post_meta($this->order->id, 'conekta-servicenumber', $charge->payment_method->service_number );
+            update_post_meta($this->order->id, 'conekta-reference', $charge->payment_method->reference );
             return true;
         } catch(Conekta_Error $e) {
             $description = $e->message_to_purchaser;

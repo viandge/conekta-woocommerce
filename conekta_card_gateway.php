@@ -11,12 +11,13 @@ if (!class_exists('Conekta')) {
 */
 class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
 {
-    protected $GATEWAY_NAME = "WC_Conekta_Card_Gateway";
-    protected $is_sandbox = true;
-    protected $order = null;
-    protected $transaction_id = null;
+    protected $GATEWAY_NAME            = "WC_Conekta_Card_Gateway";
+    protected $is_sandbox              = true;
+    protected $order                   = null;
+    protected $transaction_id          = null;
+    protected $conektaOrderId          = null;
     protected $transactionErrorMessage = null;
-    protected $currencies = array('MXN', 'USD');
+    protected $currencies              = array('MXN', 'USD');
 
     public function __construct() {
         $this->id = 'conektacard';
@@ -188,7 +189,16 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         }
 
         try {
-            $order          = \Conekta\Order::create($order_details);
+            $conekta_order_id = get_post_meta($this->order->id, 'conekta-order-id', true);
+            if (!empty($conekta_order_id)) {
+                $order = \Conekta\Order::find($conekta_order_id);
+                $order->update($order_details);
+            } else {
+                $order = \Conekta\Order::create($order_details);
+            }
+
+            update_post_meta($this->order->id, 'conekta-order-id', $order->id);
+
             $charge_details = array(
                 'payment_source' => array(
                     'type'     => 'card',
