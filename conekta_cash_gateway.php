@@ -218,10 +218,19 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         }
 
         try {
-            $order          = \Conekta\Order::create($order_details);
+            $conekta_order_id = get_post_meta($this->order->id, 'conekta-order-id', true);
+            if (!empty($conekta_order_id)) {
+                $order = \Conekta\Order::find($conekta_order_id);
+                $order->update($order_details);
+            } else {
+                $order = \Conekta\Order::create($order_details);
+            }
+
+            update_post_meta($this->order->id, 'conekta-order-id', $order->id);
+
             $charge_details = array(
                 'payment_source' => array('type' => 'oxxo_cash'),
-                'amount' => $amount
+                'amount'         => $amount
             );
 
             $charge = $order->createCharge($charge_details);
