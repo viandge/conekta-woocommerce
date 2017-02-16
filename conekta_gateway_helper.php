@@ -87,13 +87,6 @@ function build_shipping_contact($data)
     return $shipping_contact;
 }
 
-function build_fiscal_entity($data)
-{
-    $fiscal_entity = array_merge($data['shipping_contact'], array('metadata' => array('soft_validations' => true)));
-
-    return $fiscal_entity;
-}
-
 function build_customer_info($data)
 {
     $customer_info = array_merge($data['customer_info'], array('metadata' => array('soft_validations' => true)));

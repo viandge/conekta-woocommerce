@@ -200,7 +200,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
             update_post_meta($this->order->id, 'conekta-order-id', $order->id);
 
             $charge_details = array(
-                'payment_source' => array(
+                'payment_method' => array(
                     'type'     => 'card',
                     'token_id' => $data['token']
                 ),
