@@ -66,6 +66,8 @@ function build_tax_lines($taxes)
 
 function build_shipping_lines($data)
 {
+    $shipping_lines = array();
+
     if(!empty($data['shipping_lines'])) {
         $shipping_lines = $data['shipping_lines'];
     }
@@ -75,6 +77,8 @@ function build_shipping_lines($data)
 
 function build_discount_lines($data)
 {
+    $discount_lines = array();
+
     if (!empty($data['discount_lines'])) {
         $discount_lines = $data['discount_lines'];
     }
