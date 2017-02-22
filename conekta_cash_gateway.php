@@ -201,20 +201,11 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             'currency'         => $data['currency'],
             'line_items'       => $line_items,
             'customer_info'    => $customer_info,
-            'shipping_contact' => $shipping_contact
+            'shipping_contact' => $shipping_contact,
+            'shipping_lines'   => $shipping_lines,
+            'discount_lines'   => $discount_lines,
+            'tax_lines'        => $tax_lines
         );
-
-        if (isset($shipping_lines)) {
-            $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
-        }
-
-        if (isset($discount_lines)) {
-            $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
-        }
-
-        if (isset($tax_lines)) {
-            $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
-        }
 
         if (isset($order_metadata)) {
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
