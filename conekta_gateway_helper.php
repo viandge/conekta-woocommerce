@@ -12,7 +12,9 @@
  */
 function build_order_metadata($data)
 {
-    $metadata = array();
+    $metadata = array(
+        'reference_id' => $data['order_id']
+    );
 
     if (isset($data['customer_message'])) {
         $metadata = array_merge($data, array('customer_message' => $data['customer_message']));
@@ -164,6 +166,7 @@ function getRequestData($order)
         );
 
         $data = array(
+            'order_id'             => $order->id,
             'amount'               => (float) $order->get_total() * 100,
             'token'                => $_POST['conekta_token'],
             'monthly_installments' => (int) $_POST['monthly_installments'],
