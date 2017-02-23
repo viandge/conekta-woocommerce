@@ -30,7 +30,7 @@ function conekta_checkout_init_your_gateway()
                     case 'conektacard': default:
                         include_once('conekta_card_gateway.php');
                     break;
-                    case 'conektacash':
+                    case 'conektaoxxopay':
                         include_once('conekta_cash_gateway.php');
                     break;
                     case 'conektaspei':
