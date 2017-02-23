@@ -21,14 +21,14 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
 
     public function __construct()
     {
-        $this->id              = 'conektacash';
-        $this->method_title    = __( 'Conekta Cash', 'woocommerce' );
+        $this->id              = 'conektaoxxopay';
+        $this->method_title    = __( 'Conekta Oxxo Pay', 'woocommerce' );
         $this->has_fields      = true;
         $this->init_form_fields();
         $this->init_settings();
         $this->title              = $this->settings['title'];
         $this->description        = '';
-        $this->icon               = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/cash.png';
+        $this->icon               = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/oxxopay.png';
         $this->usesandboxapi      = strcmp($this->settings['debug'], 'yes') == 0;
         $this->testApiKey         = $this->settings['test_api_key'];
         $this->liveApiKey         = $this->settings['live_api_key'];
@@ -74,7 +74,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             'enabled' => array(
                 'type'        => 'checkbox',
                 'title'       => __('Enable/Disable', 'woothemes'),
-                'label'       => __('Enable Conekta Cash Payment', 'woothemes'),
+                'label'       => __('Enable Conekta Oxxo Pay Payment', 'woothemes'),
                 'default'     => 'yes'
             ),
             'debug' => array(
@@ -87,7 +87,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 'type'        => 'text',
                 'title'       => __('Title', 'woothemes'),
                 'description' => __('This controls the title which the user sees during checkout.', 'woothemes'),
-                'default'     => __('Cash Payment', 'woothemes')
+                'default'     => __('Oxxo Pay Payment', 'woothemes')
             ),
             'test_api_key' => array(
                 'type'        => 'password',
@@ -201,20 +201,11 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             'currency'         => $data['currency'],
             'line_items'       => $line_items,
             'customer_info'    => $customer_info,
-            'shipping_contact' => $shipping_contact
+            'shipping_contact' => $shipping_contact,
+            'shipping_lines'   => $shipping_lines,
+            'discount_lines'   => $discount_lines,
+            'tax_lines'        => $tax_lines
         );
-
-        if (isset($shipping_lines)) {
-            $order_details = array_merge($order_details, array('shipping_lines' => $shipping_lines));
-        }
-
-        if (isset($discount_lines)) {
-            $order_details = array_merge($order_details, array('discount_lines' => $discount_lines));
-        }
-
-        if (isset($tax_lines)) {
-            $order_details = array_merge($order_details, array('tax_lines' => $tax_lines));
-        }
 
         if (isset($order_metadata)) {
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
@@ -293,7 +284,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     {
         $this->order->add_order_note(
             sprintf(
-                "%s Cash Payment Failed : '%s'",
+                "%s Oxxo Pay Payment Failed : '%s'",
                 $this->GATEWAY_NAME,
                 $this->transactionErrorMessage
             )

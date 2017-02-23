@@ -57,6 +57,16 @@ function build_tax_lines($taxes)
                 'amount'      => intval(round(floatval($tax_amount) / 10), 2)
             )
         ));
+
+        if (isset($tax['shipping_tax_amount'])) {
+            $tax_amount = floatval($tax['shipping_tax_amount']);
+            $tax_lines  = array_merge($tax_lines, array(
+                array(
+                    'description' => 'Shipping tax',
+                    'amount'      => intval(round(floatval($tax_amount) / 10), 2)
+                )
+            ));
+        }
     }
 
     return $tax_lines;
@@ -64,6 +74,8 @@ function build_tax_lines($taxes)
 
 function build_shipping_lines($data)
 {
+    $shipping_lines = array();
+
     if(!empty($data['shipping_lines'])) {
         $shipping_lines = $data['shipping_lines'];
     }
@@ -73,6 +85,8 @@ function build_shipping_lines($data)
 
 function build_discount_lines($data)
 {
+    $discount_lines = array();
+
     if (!empty($data['discount_lines'])) {
         $discount_lines = $data['discount_lines'];
     }
