@@ -62,7 +62,7 @@ function build_tax_lines($taxes)
 
         if (isset($tax['shipping_tax_amount')) {
             $tax_amount = floatval($tax['shipping_tax_amount']);
-            $tax_lnies  = array_merge($tax_lines, array(
+            $tax_lines  = array_merge($tax_lines, array(
                 array(
                     'description' => 'Shipping tax',
                     'amount'      => intval(round(floatval($tax_amount) / 10), 2)
