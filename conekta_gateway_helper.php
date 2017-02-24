@@ -125,9 +125,9 @@ function getRequestData($order)
 
         foreach($order_coupons as $index => $coupon) {
             $discount_lines = array_merge($discount_lines, array(array(
-                'description' => $coupon['name'],
-                'type'        => $coupon['type'],
-                'amount'      => $coupon['discount_amount'] * 100
+                'code'   => $coupon['name'],
+                'type'   => $coupon['type'],
+                'amount' => $coupon['discount_amount'] * 100
             )));
         }
 
@@ -156,21 +156,6 @@ function getRequestData($order)
         );
 
         $customer_name = sprintf('%s %s', $order->billing_first_name, $order->billing_last_name);
-
-        // Fiscal Entity
-        $fical_entity = array(
-            'name'    => $order->billing_company || $customer_name,
-            'address' => array(
-                'street1'     => $order->billing_address_1,
-                'street2'     => $order->billing_address_2,
-                'phone'       => $order->billing_phone,
-                'email'       => $order->billing_email,
-                'city'        => $order->billing_city,
-                'postal_code' => $order->billing_postcode,
-                'state'       => $order->billing_state,
-                'country'     => $order->billing_country
-            )
-        );
 
         // Customer Info
         $customer_info = array(
