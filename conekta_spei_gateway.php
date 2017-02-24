@@ -47,13 +47,15 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
     public function webhook_handler()
     {
         header('HTTP/1.1 200 OK');
-        $body = @file_get_contents('php://input');
-        $event = json_decode($body);
-        $charge = $event->data->object;
-        $order_id = $charge->reference_id;
-        $paid_at = date("Y-m-d", $charge->paid_at);
-        $order = new WC_Order( $order_id );
-        if (strpos($event->type, "charge.paid") !== false && $event->payment_method->type === "spei")
+        $body          = @file_get_contents('php://input');
+        $event         = json_decode($body, true);
+        $conekta_order = $event['data']['object'];
+        $charge        = $conekta_order['charges']['data'][0];
+        $order_id      = $conekta_order['metadata']['reference_id'];
+        $paid_at       = date("Y-m-d", $charge['paid_at']);
+        $order         = new WC_Order($order_id);
+
+        if (strpos($event['type'], "order.paid") !== false && $charge['payment_method']['type'] === "spei")
             {
                 update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
                 $order->payment_complete();
