@@ -60,6 +60,8 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 update_post_meta( $order->id, 'conekta-paid-at', $paid_at);
                 $order->payment_complete();
                 $order->add_order_note(sprintf("Payment completed in Spei and notification of payment received"));
+
+                parent::offline_payment_notification($order_id, $conekta_order['customer_info']['name']);
             }
     }
 
