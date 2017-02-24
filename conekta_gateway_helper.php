@@ -56,6 +56,7 @@ function build_order_metadata($data)
 function build_line_items($items)
 {
     $line_items = array();
+
     foreach ($items as $item) {
         $productmeta = new WC_Product($item['product_id']);
         $sku         = $productmeta->get_sku();
@@ -64,7 +65,8 @@ function build_line_items($items)
             'name'        => $item['name'],
             'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
             'quantity'    => intval($item['qty']),
-            'tags'        => ['WooCommerce']
+            'tags'        => ['WooCommerce'],
+            'metadata'    => array('soft_validations' => true)
         );
 
         if (isset($sku)) {
