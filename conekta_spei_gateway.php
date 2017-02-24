@@ -198,6 +198,8 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
         }
 
+        $order_details = check_balance($order_details, $amount);
+
         try {
             $conekta_order_id = get_post_meta($this->order->id, 'conekta-order-id', true);
             if (!empty($conekta_order_id)) {

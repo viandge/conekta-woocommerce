@@ -6,6 +6,36 @@
  * Url     : https://www.conekta.io/es/docs/plugins/woocommerce
  */
 
+function check_balance($order, $total) {
+    $amount = 0;
+
+    foreach ($order['line_items'] as $line_item) {
+        $amount = $amount + ($line_item['unit_price'] * $line_item['quantity']);
+    }
+
+    foreach ($order['shipping_lines'] as $shipping_line) {
+        $amount = $amount + $shipping_line['amount'];
+    }
+
+    foreach ($order['discount_lines'] as $discount_line) {
+        $amount = $amount - $discount_line['amount'];
+    }
+
+    foreach ($order['tax_lines'] as $tax_line) {
+        $amount = $amount + $tax_line['amount'];
+    }
+
+    if ($amount != $total) {
+        $adjustment = $total - $amount;
+
+        $order['tax_lines'][0]['amount'] =
+            $order['tax_lines'][0]['amount'] + $adjustment;
+    }
+
+    return $order;
+}
+
+
 /**
  * Build the line items hash
  * @param array $items
