@@ -65,7 +65,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 $order->payment_complete();
                 $order->add_order_note(sprintf("Payment completed in Oxxo and notification of payment received"));
 
-                parent::offline_payment_notification($order_id, $charge['description']);
+                parent::offline_payment_notification($order_id, $conekta_order['customer_info']['name']);
             }
     }
 
@@ -99,6 +99,11 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 'type'        => 'password',
                 'title'       => __('Conekta API Live Private key', 'woothemes'),
                 'default'     => __('', 'woothemes')
+            ),
+            'expiration_days' => array(
+                'type'        => 'text',
+                'title'       => __('Expiration time (in days) for the reference', 'woothemes'),
+                'default'     => __('30', 'woothemes')
             ),
             'alternate_imageurl' => array(
                 'type'        => 'text',
@@ -225,8 +230,12 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
 
             update_post_meta($this->order->id, 'conekta-order-id', $order->id);
 
+            $expires_at = time() + ($this->settings['expiration_days'] * 86400);
             $charge_details = array(
-                'payment_method' => array('type' => 'oxxo_cash'),
+                'payment_method' => array(
+                    'type'       => 'oxxo_cash',
+                    'expires_at' => $expires_at
+                ),
                 'amount'         => $amount
             );
 
