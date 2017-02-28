@@ -132,7 +132,7 @@ function build_shipping_contact($data)
 {
     $shipping_contact = array();
 
-    if (isset($data['shipping_contact'])) {
+    if (!empty($data['shipping_contact'])) {
         $shipping_contact = array_merge($data['shipping_contact'], array('metadata' => array('soft_validations' => true)));
 
     }
@@ -170,7 +170,7 @@ function getRequestData($order)
 
         // Shipping Lines
         $shipping_method = $order->get_shipping_method();
-        if (isset($order->shipping_address_1)) {
+        if (!empty($shipping_method)) {
             $shipping_lines  = array(
                 array(
                     'amount'  => (float)$order->get_total_shipping() * 100,
