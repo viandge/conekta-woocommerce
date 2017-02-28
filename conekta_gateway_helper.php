@@ -130,7 +130,12 @@ function build_discount_lines($data)
 
 function build_shipping_contact($data)
 {
-    $shipping_contact = array_merge($data['shipping_contact'], array('metadata' => array('soft_validations' => true)));
+    $shipping_contact = null;
+
+    if (isset($data['shipping_contact'])) {
+        $shipping_contact = array_merge($data['shipping_contact'], array('metadata' => array('soft_validations' => true)));
+
+    }
 
     return $shipping_contact;
 }
@@ -203,11 +208,14 @@ function getRequestData($order)
             'monthly_installments' => (int) $_POST['monthly_installments'],
             'currency'             => strtolower(get_woocommerce_currency()),
             'description'          => sprintf('Charge for %s', $order->billing_email),
-            'customer_info'        => $customer_info,
-            'shipping_contact'     => $shipping_contact
+            'customer_info'        => $customer_info
         );
 
-        if(!empty($order->customer_message)) {
+        if (!empty($order->shipping_address_1)) {
+            $data = array_merge($data, array('shipping_contact' => $shipping_contact));
+        }
+
+        if (!empty($order->customer_message)) {
             $data = array_merge($data, array('customer_message' => $order->customer_message));
         }
 
