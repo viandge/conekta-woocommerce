@@ -47,7 +47,7 @@ function build_order_metadata($data)
     );
 
     if (isset($data['customer_message'])) {
-        $metadata = array_merge($data, array('customer_message' => $data['customer_message']));
+        $metadata = array_merge($metadata, array('customer_message' => $data['customer_message']));
     }
 
     return $metadata;
@@ -70,7 +70,7 @@ function build_line_items($items)
         );
 
         if (isset($sku)) {
-            array_push($line_item_params, array('sku' => $sku));
+            $line_item_params = array_merge($line_item_params, array('sku' => $sku));
         }
 
         $line_items = array_merge($line_items, array($line_item_params));
