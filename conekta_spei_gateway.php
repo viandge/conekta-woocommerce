@@ -189,12 +189,15 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
         $order_details    = array(
             'currency'         => $data['currency'],
             'line_items'       => $line_items,
-            'shipping_contact' => $shipping_contact,
             'customer_info'    => $customer_info,
             'shipping_lines'   => $shipping_lines,
             'discount_lines'   => $discount_lines,
             'tax_lines'        => $tax_lines
         );
+
+        if (!empty($shipping_contact)) {
+            $order_details = array_merge($order_details, array('shipping_contact' => $shipping_contact));
+        }
 
         if (isset($order_metadata)) {
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
