@@ -3,7 +3,7 @@ Contributors: cristinarandall
 Tags: free, oxxo, conekta, mexico, payment gateway
 Requires at least: 3.5.2
 Tested up to: 4.2.2
-Stable tag: 2.0.0
+Stable tag: 2.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,3 +68,9 @@ Replace to tusitio.com with your domain name
 * Oxxo pay
 * Fix webhooks for paid orders (previously paid charges)
 * Remove Banorte
+
+= 2.0.5 =
+* Fix shipping validations for virtual products
+* Fix rounding for non-integer cents
+* Add expiration date for oxxo pay
+* Fix webhooks for paid orders
