@@ -46,7 +46,7 @@ function build_order_metadata($data)
         'reference_id' => $data['order_id']
     );
 
-    if (isset($data['customer_message'])) {
+    if (!empty($data['customer_message'])) {
         $metadata = array_merge($metadata, array('customer_message' => $data['customer_message']));
     }
 
@@ -69,7 +69,7 @@ function build_line_items($items)
             'metadata'    => array('soft_validations' => true)
         );
 
-        if (isset($sku)) {
+        if (!empty($sku)) {
             $line_item_params = array_merge($line_item_params, array('sku' => $sku));
         }
 

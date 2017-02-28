@@ -199,7 +199,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
             $order_details = array_merge($order_details, array('shipping_contact' => $shipping_contact));
         }
 
-        if (isset($order_metadata)) {
+        if (!empty($order_metadata)) {
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
         }
 

@@ -180,7 +180,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         }
 
 
-        if (isset($order_metadata)) {
+        if (!empty($order_metadata)) {
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
         }
 
