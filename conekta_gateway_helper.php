@@ -47,7 +47,7 @@ function build_order_metadata($data)
     );
 
     if (isset($data['customer_message'])) {
-        $metadata = array_merge($data, array('customer_message' => $data['customer_message']));
+        $metadata = array_merge($metadata, array('customer_message' => $data['customer_message']));
     }
 
     return $metadata;
