@@ -130,7 +130,7 @@ function build_discount_lines($data)
 
 function build_shipping_contact($data)
 {
-    $shipping_contact = null;
+    $shipping_contact = array();
 
     if (isset($data['shipping_contact'])) {
         $shipping_contact = array_merge($data['shipping_contact'], array('metadata' => array('soft_validations' => true)));
@@ -170,16 +170,16 @@ function getRequestData($order)
 
         // Shipping Lines
         $shipping_method = $order->get_shipping_method();
-        $shipping_lines  = array(
-            array(
-                'amount'      => (float)$order->get_total_shipping() * 100,
-                'carrier'     => $shipping_method,
-                'method'      => $shipping_method
-            )
-        );
+        if (isset($order->shipping_address_1)) {
+            $shipping_lines  = array(
+                array(
+                    'amount'  => (float)$order->get_total_shipping() * 100,
+                    'carrier' => $shipping_method,
+                    'method'  => $shipping_method
+                )
+            );
 
-        // Shipping Contact
-        $shipping_contact = array(
+            $shipping_contact = array(
             'phone'    => $order->billing_phone,
             'receiver' => sprintf('%s %s', $order->shipping_first_name, $order->shipping_last_name),
             'address' => array(
@@ -191,6 +191,16 @@ function getRequestData($order)
                 'postal_code' => $order->shipping_postcode
             ),
         );
+
+        } else {
+            $shipping_lines  = array(
+                array(
+                    'amount'   => 0,
+                    'carrier'  => 'carrier',
+                    'method'   => 'pickup'
+                )
+            );
+        }
 
         $customer_name = sprintf('%s %s', $order->billing_first_name, $order->billing_last_name);
 
@@ -208,7 +218,8 @@ function getRequestData($order)
             'monthly_installments' => (int) $_POST['monthly_installments'],
             'currency'             => strtolower(get_woocommerce_currency()),
             'description'          => sprintf('Charge for %s', $order->billing_email),
-            'customer_info'        => $customer_info
+            'customer_info'        => $customer_info,
+            'shipping_lines'       => $shipping_lines
         );
 
         if (!empty($order->shipping_address_1)) {
@@ -221,9 +232,6 @@ function getRequestData($order)
 
         if(!empty($discount_lines)) {
             $data = array_merge($data, array('discount_lines' => $discount_lines));
-        }
-        if (!empty($shipping_method)) {
-            $data = array_merge($data, array('shipping_lines' => $shipping_lines));
         }
 
         return $data;
