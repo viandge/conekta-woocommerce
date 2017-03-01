@@ -42,7 +42,7 @@
 </p>
 
 <!--<div class="form-row form-row-wide">
-  <label for="conekta-card-expiration"><?php echo $this->lang_options["expiration"]; ?> (MM/YY) <span class="required">*</span></label>
+  <label for="conekta-card-expiration"><?php echo $this->lang_options["card_expiration"]; ?> (MM/YY) <span class="required">*</span></label>
   <input id="conekta-card-expiration" data-conekta="card[expiration]" class="input-text" type="text" autocomplete="off" placeholder="MM / YY" />
 </div>-->
 
