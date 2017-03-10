@@ -30,6 +30,10 @@ function check_balance($order, $total) {
 
         $order['tax_lines'][0]['amount'] =
             $order['tax_lines'][0]['amount'] + $adjustment;
+
+        if (empty($order['tax_lines'][0]['description'])) {
+            $order['tax_lines'][0]['description'] = 'Round Adjustment';
+        }
     }
 
     return $order;
