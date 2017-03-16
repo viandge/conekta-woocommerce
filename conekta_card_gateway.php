@@ -207,7 +207,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
 
             $monthly_installments = $data['monthly_installments'];
             if ($monthly_installments > 1) {
-                $charge_details = array_merge($charge_details, array('monthly_installments' => $monthly_installments));
+                $charge_details['payment_method']['monthly_installments'] = $monthly_installments;
             }
 
             $charge = $order->createCharge($charge_details);
