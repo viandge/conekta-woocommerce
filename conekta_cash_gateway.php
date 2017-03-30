@@ -196,7 +196,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         $amount           = $data['amount'];
         $items            = $this->order->get_items();
         $taxes            = $this->order->get_taxes();
-        $line_items       = build_line_items($items);
+        $line_items       = build_line_items($items, parent::get_version());
         $discount_lines   = build_discount_lines($data);
         $shipping_lines   = build_shipping_lines($data);
         $shipping_contact = build_shipping_contact($data);

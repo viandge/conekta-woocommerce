@@ -13,7 +13,7 @@ if (!class_exists('Conekta'))
 
 class WC_Conekta_Plugin extends WC_Payment_Gateway
 {
-	public $version  = "0.5.1";
+	public $version  = "2.0.12";
 	public $description = "Payment Gateway through Conekta.io for Woocommerce for both credit and debit cards as well as cash payments in OXXO and monthly installments for Mexican credit cards.";
 	public $plugin_name = "Conekta Payment Gateway for Woocommerce";
 	public $plugin_URI = "https://wordpress.org/plugins/conekta-woocommerce/";
@@ -22,6 +22,11 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
 
 	protected $lang;
 	protected $lang_messages;
+
+    public function get_version()
+    {
+        return $this->version;
+    }
 
 	public function set_locale_options()
 	{
