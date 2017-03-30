@@ -57,7 +57,7 @@ function build_order_metadata($data)
     return $metadata;
 }
 
-function build_line_items($items)
+function build_line_items($items, $version)
 {
     $line_items = array();
 
@@ -69,7 +69,7 @@ function build_line_items($items)
             'name'        => $item['name'],
             'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
             'quantity'    => intval($item['qty']),
-            'tags'        => ['WooCommerce'],
+            'tags'        => ['WooCommerce', "Conekta ".$version],
             'metadata'    => array('soft_validations' => true)
         );
 
