@@ -29,7 +29,7 @@ function check_balance($order, $total) {
         $adjustment = $total - $amount;
 
         $order['tax_lines'][0]['amount'] =
-            $order['tax_lines'][0]['amount'] + $adjustment;
+            $order['tax_lines'][0]['amount'] + intval($adjustment);
 
         if (empty($order['tax_lines'][0]['description'])) {
             $order['tax_lines'][0]['description'] = 'Round Adjustment';
