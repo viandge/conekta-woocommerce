@@ -6,7 +6,7 @@
  * Url     : https://www.conekta.io/es/docs/plugins/woocommerce
  */
 
-function check_balance($order, $total) {
+function ckpg_check_balance($order, $total) {
     $amount = 0;
 
     foreach ($order['line_items'] as $line_item) {
@@ -44,7 +44,7 @@ function check_balance($order, $total) {
  * Build the line items hash
  * @param array $items
  */
-function build_order_metadata($data)
+function ckpg_build_order_metadata($data)
 {
     $metadata = array(
         'reference_id' => $data['order_id']
@@ -57,18 +57,25 @@ function build_order_metadata($data)
     return $metadata;
 }
 
-function build_line_items($items, $version)
+function ckpg_build_line_items($items, $version)
 {
     $line_items = array();
 
     foreach ($items as $item) {
+
+
         $productmeta = new WC_Product($item['product_id']);
         $sku         = $productmeta->get_sku();
         $unit_price  = (floatval($item['line_subtotal']) * 1000) / floatval($item['qty']);
+        $itemName  = ((string) $item['name'] == true) ? sanitize_text_field($item['name']): ""; 
+        $unitPrice = intval(round(floatval($unit_price) / 10), 2);
+        $quantity  = intval($item['qty']);
+
+
         $line_item_params = array(
-            'name'        => $item['name'],
-            'unit_price'  => intval(round(floatval($unit_price) / 10), 2),
-            'quantity'    => intval($item['qty']),
+            'name'        => $itemName,
+            'unit_price'  => $unitPrice,
+            'quantity'    => $quantity,
             'tags'        => ['WooCommerce', "Conekta ".$version],
             'metadata'    => array('soft_validations' => true)
         );
@@ -83,25 +90,32 @@ function build_line_items($items, $version)
     return $line_items;
 }
 
-function build_tax_lines($taxes)
+function ckpg_build_tax_lines($taxes)
 {
     $tax_lines = array();
 
     foreach ($taxes as $tax) {
+
+
         $tax_amount = floatval($tax['tax_amount']) * 1000;
+        $taxName    = (string)$tax['label'];
+        $taxName    = esc_html($tax['label']);
+
+
         $tax_lines  = array_merge($tax_lines, array(
             array(
-                'description' => $tax['label'],
+                'description' => $taxName,
                 'amount'      => intval(round(floatval($tax_amount) / 10), 2)
             )
         ));
 
         if (isset($tax['shipping_tax_amount'])) {
             $tax_amount = floatval($tax['shipping_tax_amount']) * 1000;
+            $amount     = intval(round(floatval($tax_amount) / 10), 2);
             $tax_lines  = array_merge($tax_lines, array(
                 array(
                     'description' => 'Shipping tax',
-                    'amount'      => intval(round(floatval($tax_amount) / 10), 2)
+                    'amount'      => $amount
                 )
             ));
         }
@@ -110,7 +124,7 @@ function build_tax_lines($taxes)
     return $tax_lines;
 }
 
-function build_shipping_lines($data)
+function ckpg_build_shipping_lines($data)
 {
     $shipping_lines = array();
 
@@ -121,7 +135,7 @@ function build_shipping_lines($data)
     return $shipping_lines;
 }
 
-function build_discount_lines($data)
+function ckpg_build_discount_lines($data)
 {
     $discount_lines = array();
 
@@ -132,7 +146,7 @@ function build_discount_lines($data)
     return $discount_lines;
 }
 
-function build_shipping_contact($data)
+function ckpg_build_shipping_contact($data)
 {
     $shipping_contact = array();
 
@@ -144,7 +158,7 @@ function build_shipping_contact($data)
     return $shipping_contact;
 }
 
-function build_customer_info($data)
+function ckpg_build_customer_info($data)
 {
     $customer_info = array_merge($data['customer_info'], array('metadata' => array('soft_validations' => true)));
 
@@ -156,8 +170,10 @@ function build_customer_info($data)
 * @param WC_Order $order
 * Send as much information about the order as possible to Conekta
 */
-function getRequestData($order)
+function ckpg_getRequestData($order)
 {
+    $token = "";
+    $monthly_installments = "";
     if ($order AND $order != null)
     {
         // Discount Lines
@@ -171,31 +187,47 @@ function getRequestData($order)
                 'amount' => $coupon['discount_amount'] * 100
             )));
         }
+        
+        //PARAMS VALIDATION
+        $amountShipping = is_numeric($order->get_total_shipping()) ? (float) $order->get_total_shipping() * 100 : null ;
+
+
 
         // Shipping Lines
         $shipping_method = $order->get_shipping_method();
         if (!empty($shipping_method)) {
             $shipping_lines  = array(
                 array(
-                    'amount'  => (float)$order->get_total_shipping() * 100,
+                    'amount'  => $amountShipping,
                     'carrier' => $shipping_method,
                     'method'  => $shipping_method
                 )
             );
 
+
+            //PARAM VALIDATION
+            $name = ((string) $order->shipping_first_name == true )    ? esc_html($order->shipping_first_name)           : null;
+            $last = ( (string) $order->shipping_last_name == true)     ? esc_html($order->shipping_last_name)            : null ;
+            $address1  = ((string) $order->shipping_address_1 == true) ? sanitize_text_field($order->address1)           : null ;
+            $address2  = ((string) $order->shipping_address_2 == true) ? sanitize_text_field($order->shipping_address_2) : null ;
+            $city      = ((string) $order->shipping_city == true)      ? sanitize_text_field($order->shipping_city)      : null ;
+            $state     = ((string) $order->shipping_state == true)     ? sanitize_text_field($order->shipping_state)     : null ;
+            $country   = ((string) $order->shipping_country == true)   ? sanitize_text_field($order->shipping_country)   : null ;
+            $postal    = (strlen($order->shipping_postcode) > 5)       ? substr($order->shipping_postcode,0, 5)          : null ;
+
+
             $shipping_contact = array(
             'phone'    => $order->billing_phone,
-            'receiver' => sprintf('%s %s', $order->shipping_first_name, $order->shipping_last_name),
+            'receiver' => sprintf('%s %s', $name, $last),
             'address' => array(
-                'street1'     => $order->shipping_address_1,
-                'street2'     => $order->shipping_address_2,
-                'city'        => $order->shipping_city,
-                'state'       => $order->shipping_state,
-                'country'     => $order->shipping_country,
-                'postal_code' => $order->shipping_postcode
+                'street1'     => $address1,
+                'street2'     => $address2,
+                'city'        => $city,
+                'state'       => $state,
+                'country'     => $country,
+                'postal_code' => $postal
             ),
         );
-
         } else {
             $shipping_lines  = array(
                 array(
@@ -206,25 +238,36 @@ function getRequestData($order)
             );
         }
 
+         //PARAM VALIDATION   
         $customer_name = sprintf('%s %s', $order->billing_first_name, $order->billing_last_name);
+        $phone         = sanitize_text_field($order->billing_phone);
 
         // Customer Info
         $customer_info = array(
             'name'  => $customer_name,
-            'phone' => $order->billing_phone,
-            'email' => $order->billing_email
+            'phone' => $phone,
+            'email' => $order->email
         );
+
+        //PARAMS VALIDATION
+        $token                = ((string) $_POST['conekta_token'] == true)    ? sanitize_text_field($_POST['conekta_token']) : null ;
+        $monthly_installments = is_numeric($_POST['monthly_installments'])    ? intval($_POST['monthly_installments'])       : 1 ;
+        $amount               = is_numeric($order->get_total())               ? (float) $order->get_total() * 100            : null ;
+        $currency             = ((string) get_woocommerce_currency() == true) ? strtolower(get_woocommerce_currency())       : 'mxn';
+
 
         $data = array(
             'order_id'             => $order->id,
-            'amount'               => (float) $order->get_total() * 100,
-            'token'                => $_POST['conekta_token'],
-            'monthly_installments' => (int) $_POST['monthly_installments'],
-            'currency'             => strtolower(get_woocommerce_currency()),
+            'amount'               => $amount,
+            'token'                => $token,
+            'monthly_installments' => $monthly_installments,
+            'currency'             => $currency,
             'description'          => sprintf('Charge for %s', $order->billing_email),
             'customer_info'        => $customer_info,
             'shipping_lines'       => $shipping_lines
         );
+
+
 
         if (!empty($order->shipping_address_1)) {
             $data = array_merge($data, array('shipping_contact' => $shipping_contact));

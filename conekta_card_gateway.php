@@ -24,12 +24,12 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         $this->method_title = __('Conekta Card', 'conektacard');
         $this->has_fields = true;
 
-        $this->init_form_fields();
+        $this->ckpg_init_form_fields();
         $this->init_settings();
 
         $this->title       = $this->settings['title'];
         $this->description = '';
-        $this->icon        = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/credits.png';
+        $this->icon        = $this->settings['alternate_imageurl'] ? $this->settings['alternate_imageurl']  : WP_PLUGIN_URL . "/" . plugin_basename( dirname(__FILE__)) . '/images/credits.png'; 
 
         $this->usesandboxapi      = strcmp($this->settings['debug'], 'yes') == 0;
         $this->enablemeses        = strcmp($this->settings['meses'], 'yes') == 0;
@@ -40,13 +40,13 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         $this->publishable_key    = $this->usesandboxapi ? $this->testPublishableKey : $this->livePublishableKey;
         $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
 
-        $this->lang_options = parent::set_locale_options()->get_lang_options();        
+        $this->lang_options = parent::ckpg_set_locale_options()->ckpg_get_lang_options();  
 
-        add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
+        add_action('wp_enqueue_scripts', array($this, 'ckpg_payment_fields'));
         add_action('woocommerce_update_options_payment_gateways_'.$this->id, array($this, 'process_admin_options'));
-        add_action('admin_notices', array(&$this, 'perform_ssl_check'));
+        add_action('admin_notices', array(&$this, 'ckpg_perform_ssl_check'));
 
-        if (!$this->validateCurrency()) {
+        if (!$this->ckpg_validateCurrency()) {
             $this->enabled = false;
         }
 
@@ -59,14 +59,14 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
     * Checks to see if SSL is configured and if plugin is configured in production mode 
     * Forces use of SSL if not in testing 
     */ 
-    public function perform_ssl_check()
+    public function ckpg_perform_ssl_check()
     {
         if (!$this->usesandboxapi && get_option('woocommerce_force_ssl_checkout') == 'no' && $this->enabled == 'yes') {
             echo '<div class="error"><p>'.sprintf(__('%s sandbox testing is disabled and can performe live transactions but the <a href="%s">force SSL option</a> is disabled; your checkout is not secure! Please enable SSL and ensure your server has a valid SSL certificate.', 'woothemes'), $this->GATEWAY_NAME, admin_url('admin.php?page=settings')).'</p></div>';
         }
     }
     
-    public function init_form_fields()
+    public function ckpg_init_form_fields()
     {
         $this->form_fields = array(
          'enabled' => array(
@@ -131,14 +131,15 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         include_once('templates/payment.php');
     }
 
-    public function payment_scripts() {
+    public function ckpg_payment_fields() {
         if (!is_checkout()) {
             return;
         }
 
         wp_enqueue_script('conekta_js', 'https://conektaapi.s3.amazonaws.com/v0.3.2/js/conekta.js', '', '', true);
-        wp_enqueue_script('tokenize', WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__)).'/assets/js/tokenize.js', '', '1.0', true);
+        wp_enqueue_script('tokenize', WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__)).'/assets/js/tokenize.js', '', '1.0', true); //check import convention
 
+        //PCI
         $params = array(
             'public_key' => $this->publishable_key
         );
@@ -146,7 +147,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         wp_localize_script('tokenize', 'wc_conekta_params', $params);
     }
 
-    protected function send_to_conekta()
+    protected function ckpg_send_to_conekta()
     {
         global $woocommerce;
         include_once('conekta_gateway_helper.php');
@@ -155,17 +156,20 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         \Conekta\Conekta::setPlugin('WooCommerce');
         \Conekta\Conekta::setLocale('es');
 
-        $data             = getRequestData($this->order);
+
+
+        //ALL $data VAR ASSIGNATION IS FREE OF VALIDATION
+        $data             = ckpg_getRequestData($this->order);
         $amount           = $data['amount'];
         $items            = $this->order->get_items();
         $taxes            = $this->order->get_taxes();
-        $line_items       = build_line_items($items, parent::get_version());
-        $discount_lines   = build_discount_lines($data);
-        $shipping_lines   = build_shipping_lines($data);
-        $shipping_contact = build_shipping_contact($data);
-        $tax_lines        = build_tax_lines($taxes);
-        $customer_info    = build_customer_info($data);
-        $order_metadata   = build_order_metadata($data);
+        $line_items       = ckpg_build_line_items($items, parent::ckpg_get_version());
+        $discount_lines   = ckpg_build_discount_lines($data);
+        $shipping_lines   = ckpg_build_shipping_lines($data);
+        $shipping_contact = ckpg_build_shipping_contact($data);
+        $tax_lines        = ckpg_build_tax_lines($taxes);
+        $customer_info    = ckpg_build_customer_info($data);
+        $order_metadata   = ckpg_build_order_metadata($data);
         $order_details    = array(
             'currency'         => $data['currency'],
             'line_items'       => $line_items,
@@ -184,7 +188,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
         }
 
-        $order_details = check_balance($order_details, $amount);
+        $order_details = ckpg_check_balance($order_details, $amount);
 
         try {
             $conekta_order_id = get_post_meta($this->order->id, 'conekta-order-id', true);
@@ -194,7 +198,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
             } else {
                 $order = \Conekta\Order::create($order_details);
             }
-
+            //ORDER ID IS GENERATED BY RESPONSE 
             update_post_meta($this->order->id, 'conekta-order-id', $order->id);
 
             $charge_details = array(
@@ -219,8 +223,8 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
             update_post_meta( $this->order->id, 'transaction_id', $this->transactionId);
             return true;
 
-        } catch(Conekta_Error $e) {
-            $description = $e->message_to_purchaser;
+        } catch(\Conekta\Handler $e) {
+            $description = $e->getMessage();
             global $wp_version;
             if (version_compare($wp_version, '4.1', '>=')) {
                 wc_add_notice(__('Error: ', 'woothemes') . $description , $notice_type = 'error');
@@ -232,7 +236,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         }
     }
 
-    protected function markAsFailedPayment()
+    protected function ckpg_markAsFailedPayment()
     {
         $this->order->add_order_note(
          sprintf(
@@ -243,7 +247,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
          );
     }
 
-    protected function completeOrder()
+    protected function ckpg_completeOrder()
     {
         global $woocommerce;
 
@@ -269,9 +273,9 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
     {
         global $woocommerce;
         $this->order        = new WC_Order($order_id);
-        if ($this->send_to_conekta())
+        if ($this->ckpg_send_to_conekta())
         {
-            $this->completeOrder();
+            $this->ckpg_completeOrder();
 
             $result = array(
                 'result' => 'success',
@@ -281,7 +285,7 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
         }
         else
         {
-            $this->markAsFailedPayment();
+            $this->ckpg_markAsFailedPayment();
         }
     }
 
@@ -295,18 +299,18 @@ class WC_Conekta_Card_Gateway extends WC_Conekta_Plugin
      * @access public
      * @return bool
      */
-    public function validateCurrency() {
+    public function ckpg_validateCurrency() {
         return in_array(get_woocommerce_currency(), $this->currencies);
     }
 
-    public function isNullOrEmptyString($string) {
+    public function ckpg_isNullOrEmptyString($string) {
         return (!isset($string) || trim($string) === '');
     }
 }
 
-function conekta_card_add_gateway($methods) {
+function ckpg_conekta_card_add_gateway($methods) {
     array_push($methods, 'WC_Conekta_Card_Gateway');
     return $methods;
 }
 
-add_filter('woocommerce_payment_gateways', 'conekta_card_add_gateway');
+add_filter('woocommerce_payment_gateways', 'ckpg_conekta_card_add_gateway');

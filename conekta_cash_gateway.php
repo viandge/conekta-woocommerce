@@ -24,7 +24,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         $this->id              = 'conektaoxxopay';
         $this->method_title    = __( 'Conekta Oxxo Pay', 'woocommerce' );
         $this->has_fields      = true;
-        $this->init_form_fields();
+        $this->ckpg_init_form_fields();
         $this->init_settings();
         $this->title              = $this->settings['title'];
         $this->description        = '';
@@ -38,17 +38,17 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $this->enabled = false;
         }
         add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
-        add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
-        add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'));
-        add_action('woocommerce_email_before_order_table', array($this, 'email_reference'));
-        add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'webhook_handler'));
+        add_action('woocommerce_thankyou_' . $this->id, array($this, 'ckpg_thankyou_page'));
+        add_action('woocommerce_email_before_order_table', array($this, 'ckpg_email_instructions'));
+        add_action('woocommerce_email_before_order_table', array($this, 'ckpg_email_reference'));
+        add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'ckpg_webhook_handler'));
     }
 
     /**
      * Updates the status of the order.
      * Webhook needs to be added to Conekta account tusitio.com/wc-api/WC_Conekta_Cash_Gateway
      */
-    public function webhook_handler()
+    public function ckpg_webhook_handler()
     {
         header('HTTP/1.1 200 OK');
         $body          = @file_get_contents('php://input');
@@ -65,11 +65,11 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
                 $order->payment_complete();
                 $order->add_order_note(sprintf("Payment completed in Oxxo and notification of payment received"));
 
-                parent::offline_payment_notification($order_id, $conekta_order['customer_info']['name']);
+                parent::ckpg_offline_payment_notification($order_id, $conekta_order['customer_info']['name']);
             }
     }
 
-    public function init_form_fields()
+    public function ckpg_init_form_fields()
     {
         $this->form_fields = array(
             'enabled' => array(
@@ -129,12 +129,15 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
 
     /**
      * Output for the order received page.
+     * 
      * @param string $order_id
      */
-    function thankyou_page($order_id) {
+
+    // this echo's may were safe of validation, because there are proveided by os
+    function ckpg_thankyou_page($order_id) {
         $order = new WC_Order( $order_id );
 
-        echo '<p style="font-size: 30px"><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
+        echo '<p style="font-size: 30px"><strong>'.__('Referencia').':</strong> ' . get_post_meta( esc_html($order->id), 'conekta-referencia', true ). '</p>';
         echo '<p>OXXO cobrará una comisión adicional al momento de realizar el pago.</p>';
                 echo '<p>INSTRUCCIONES:<ol><li>Acude a la tienda OXXO más cercana.</li><li>Inidica en caja que quieres realizar un pago de <b>OXXOPay</b>.</li><li>Dicta al cajero el número de referencia en esta ficha para que la tecleé directamente en la pantalla de venta.</li><li>Realiza el pago correspondiente con dinero en efectivo.</li><li>Al confirmar tu pago, el cajero te entregará un comprobante impreso. <b>En él podrás verificar que se haya realizado correctamente</b>. Conserva este comprobante de pago.</li></ol>';
 
@@ -147,7 +150,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
      * @param WC_Order $order
      */
 
-    function email_reference($order) {
+    function ckpg_email_reference($order) {
         if (get_post_meta( $order->id, 'conekta-referencia', true ) != null)
             {
                 echo '<p style="font-size: 30px"><strong>'.__('Referencia').':</strong> ' . get_post_meta( $order->id, 'conekta-referencia', true ). '</p>';
@@ -164,7 +167,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
      * @param bool $sent_to_admin
      * @param bool $plain_text
      */
-    public function email_instructions( $order, $sent_to_admin = false, $plain_text = false ) {
+    public function ckpg_email_instructions( $order, $sent_to_admin = false, $plain_text = false ) {
         if (get_post_meta( $order->id, '_payment_method', true ) === $this->id){
             $instructions = $this->form_fields['instructions'];
             if ( $instructions && 'on-hold' === $order->status ) {
@@ -173,7 +176,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         }
     }
 
-    public function admin_options()
+    public function ckpg_admin_options()
     {
         include_once('templates/cash_admin.php');
     }
@@ -183,7 +186,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         include_once('templates/cash.php');
     }
 
-    protected function send_to_conekta()
+    protected function ckpg_send_to_conekta()
     {
         global $woocommerce;
         include_once('conekta_gateway_helper.php');
@@ -192,17 +195,17 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         \Conekta\Conekta::setPlugin('WooCommerce');
         \Conekta\Conekta::setLocale('es');
 
-        $data             = getRequestData($this->order);
+        $data             = ckpg_getRequestData($this->order);
         $amount           = $data['amount'];
         $items            = $this->order->get_items();
         $taxes            = $this->order->get_taxes();
-        $line_items       = build_line_items($items, parent::get_version());
-        $discount_lines   = build_discount_lines($data);
-        $shipping_lines   = build_shipping_lines($data);
-        $shipping_contact = build_shipping_contact($data);
-        $tax_lines        = build_tax_lines($taxes);
-        $customer_info    = build_customer_info($data);
-        $order_metadata   = build_order_metadata($data);
+        $line_items       = ckpg_build_line_items($items, parent::ckpg_get_version());
+        $discount_lines   = ckpg_build_discount_lines($data);
+        $shipping_lines   = ckpg_build_shipping_lines($data);
+        $shipping_contact = ckpg_build_shipping_contact($data);
+        $tax_lines        = ckpg_build_tax_lines($taxes);
+        $customer_info    = ckpg_build_customer_info($data);
+        $order_metadata   = ckpg_build_order_metadata($data);
         $order_details    = array(
             'currency'         => $data['currency'],
             'line_items'       => $line_items,
@@ -220,7 +223,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             $order_details = array_merge($order_details, array('metadata' => $order_metadata));
         }
 
-        $order_details = check_balance($order_details, $amount);
+        $order_details = ckpg_check_balance($order_details, $amount);
 
         try {
             $conekta_order_id = get_post_meta($this->order->id, 'conekta-order-id', true);
@@ -251,8 +254,8 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             update_post_meta($this->order->id, 'conekta-referencia', $charge->payment_method->reference);
 
             return true;
-        } catch(Conekta_Error $e) {
-            $description = $e->message_to_purchaser;
+        } catch(\Conekta\Handler $e) {
+            $description = $e->getMessage();
 
             global $wp_version;
             if (version_compare($wp_version, '4.1', '>=')) {
@@ -269,7 +272,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
     {
         global $woocommerce;
         $this->order        = new WC_Order($order_id);
-        if ($this->send_to_conekta())
+        if ($this->ckpg_send_to_conekta())
             {
                 // Mark as on-hold (we're awaiting the notification of payment)
                 $this->order->update_status('on-hold', __( 'Awaiting the conekta OXOO payment', 'woocommerce' ));
@@ -285,7 +288,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             }
         else
             {
-                $this->markAsFailedPayment();
+                $this->ckpg_markAsFailedPayment();
                 global $wp_version;
                 if (version_compare($wp_version, '4.1', '>=')) {
                     wc_add_notice(__('Transaction Error: Could not complete the payment', 'woothemes'), $notice_type = 'error');
@@ -295,7 +298,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
             }
     }
 
-    protected function markAsFailedPayment()
+    protected function ckpg_markAsFailedPayment()
     {
         $this->order->add_order_note(
             sprintf(
@@ -306,7 +309,7 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
         );
     }
 
-    protected function completeOrder()
+    protected function ckpg_completeOrder()
     {
         global $woocommerce;
 
@@ -328,27 +331,28 @@ class WC_Conekta_Cash_Gateway extends WC_Conekta_Plugin
 
 }
 
-function conekta_cash_order_status_completed($order_id = null)
+function ckpg_conekta_cash_order_status_completed($order_id = null)
 {
     global $woocommerce;
-    if (!$order_id)
-        $order_id = $_POST['order_id'];
+    if (!$order_id){
+        $order_id = sanitize_text_field((string) $_POST['order_id']);
+    }
 
     $data = get_post_meta( $order_id );
     $total = $data['_order_total'][0] * 100;
 
     $params = array();
-    if(isset($_POST['amount']) && $amount = $_POST['amount'])
+    if(isset($_POST['amount']) && $amount = floatval($_POST['amount'])) 
         {
             $params['amount'] = round($amount);
         }
 }
 
-function conektacheckout_add_cash_gateway($methods)
+function ckpg_conektacheckout_add_cash_gateway($methods)
 {
     array_push($methods, 'WC_Conekta_Cash_Gateway');
     return $methods;
 }
 
-add_filter('woocommerce_payment_gateways',                      'conektacheckout_add_cash_gateway');
-add_action('woocommerce_order_status_processing_to_completed',  'conekta_cash_order_status_completed' );
+add_filter('woocommerce_payment_gateways',                      'ckpg_conektacheckout_add_cash_gateway');
+add_action('woocommerce_order_status_processing_to_completed',  'ckpg_conekta_cash_order_status_completed' );
