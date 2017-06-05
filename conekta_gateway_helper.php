@@ -108,7 +108,7 @@ function ckpg_build_tax_lines($taxes)
 
         $tax_amount = floatval($tax['tax_amount']) * 1000;
         $taxName    = (string)$tax['label'];
-        $taxName    = esc_html($tax['label']);
+        $taxName    = esc_html($taxName);
 
 
         $tax_lines  = array_merge($tax_lines, array(
