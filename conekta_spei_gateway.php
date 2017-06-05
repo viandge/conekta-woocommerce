@@ -316,11 +316,12 @@ function ckpg_conekta_spei_order_status_completed($order_id = null)
     $data = get_post_meta( $order_id );
     $total = $data['_order_total'][0] * 100;
 
-    $params = array();
-    if(isset($_POST['amount']) && $amount = floatval($_POST['amount']))
-        {
-            $params['amount'] = round($amount);
-        }
+    $params = array(); 
+    $amount = floatval($_POST['amount']);
+    if(isset($amount))
+    {
+        $params['amount'] = round($amount);
+    }
 }
 
 function ckpg_conektacheckout_add_spei_gateway($methods)

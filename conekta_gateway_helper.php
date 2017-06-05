@@ -51,7 +51,10 @@ function ckpg_build_order_metadata($data)
     );
 
     if (!empty($data['customer_message'])) {
-        $metadata = array_merge($metadata, array('customer_message' => $data['customer_message']));
+        $metadata = array_merge(
+            $metadata, array(
+                'customer_message' => $data['customer_message'])
+        );
     }
 
     return $metadata;
@@ -63,13 +66,14 @@ function ckpg_build_line_items($items, $version)
 
     foreach ($items as $item) {
 
-
+        $subTotal    = floatval($item['line_subtotal']) * 1000;
+        $subTotal    = $subTotal / floatval($item['qty'];
         $productmeta = new WC_Product($item['product_id']);
         $sku         = $productmeta->get_sku();
-        $unit_price  = (floatval($item['line_subtotal']) * 1000) / floatval($item['qty']);
-        $itemName  = ((string) $item['name'] == true) ? sanitize_text_field($item['name']): ""; 
-        $unitPrice = intval(round(floatval($unit_price) / 10), 2);
-        $quantity  = intval($item['qty']);
+        $unit_price  = $subTotal;
+        $itemName    = self::itemNameValidation($item['name']);
+        $unitPrice   = intval(round(floatval($unit_price) / 10), 2);
+        $quantity    = intval($item['qty']);
 
 
         $line_item_params = array(
@@ -81,7 +85,12 @@ function ckpg_build_line_items($items, $version)
         );
 
         if (!empty($sku)) {
-            $line_item_params = array_merge($line_item_params, array('sku' => $sku));
+            $line_item_params = array_merge(
+                $line_item_params, 
+                array(
+                    'sku' => $sku
+                )
+            );
         }
 
         $line_items = array_merge($line_items, array($line_item_params));
@@ -112,12 +121,14 @@ function ckpg_build_tax_lines($taxes)
         if (isset($tax['shipping_tax_amount'])) {
             $tax_amount = floatval($tax['shipping_tax_amount']) * 1000;
             $amount     = intval(round(floatval($tax_amount) / 10), 2);
-            $tax_lines  = array_merge($tax_lines, array(
-                array(
-                    'description' => 'Shipping tax',
-                    'amount'      => $amount
+            $tax_lines  = array_merge(
+                $tax_lines, array(
+                    array(
+                        'description' => 'Shipping tax',
+                        'amount'      => $amount
+                    )
                 )
-            ));
+            );
         }
     }
 
@@ -181,17 +192,19 @@ function ckpg_getRequestData($order)
         $discount_lines = array();
 
         foreach($order_coupons as $index => $coupon) {
-            $discount_lines = array_merge($discount_lines, array(array(
-                'code'   => $coupon['name'],
-                'type'   => $coupon['type'],
-                'amount' => $coupon['discount_amount'] * 100
-            )));
+            $discount_lines = array_merge($discount_lines, 
+                array(
+                    array(
+                        'code'   => $coupon['name'],
+                        'type'   => $coupon['type'],
+                        'amount' => $coupon['discount_amount'] * 100
+                    )
+                )
+            );
         }
         
         //PARAMS VALIDATION
-        $amountShipping = is_numeric($order->get_total_shipping()) ? (float) $order->get_total_shipping() * 100 : null ;
-
-
+        $amountShipping = self::amountValidation($order->get_total_shipping());
 
         // Shipping Lines
         $shipping_method = $order->get_shipping_method();
@@ -206,14 +219,14 @@ function ckpg_getRequestData($order)
 
 
             //PARAM VALIDATION
-            $name = ((string) $order->shipping_first_name == true )    ? esc_html($order->shipping_first_name)           : null;
-            $last = ( (string) $order->shipping_last_name == true)     ? esc_html($order->shipping_last_name)            : null ;
-            $address1  = ((string) $order->shipping_address_1 == true) ? sanitize_text_field($order->address1)           : null ;
-            $address2  = ((string) $order->shipping_address_2 == true) ? sanitize_text_field($order->shipping_address_2) : null ;
-            $city      = ((string) $order->shipping_city == true)      ? sanitize_text_field($order->shipping_city)      : null ;
-            $state     = ((string) $order->shipping_state == true)     ? sanitize_text_field($order->shipping_state)     : null ;
-            $country   = ((string) $order->shipping_country == true)   ? sanitize_text_field($order->shipping_country)   : null ;
-            $postal    = (strlen($order->shipping_postcode) > 5)       ? substr($order->shipping_postcode,0, 5)          : null ;
+            $name      = self::stringValidation($order->shipping_first_name);
+            $last      = self::stringValidation($order->shipping_last_name);
+            $address1  = self::stringValidation($order->shipping_address_1);
+            $address2  = self::stringValidation($order->shipping_address_2);
+            $city      = self::stringValidation($order->shipping_city);
+            $state     = self::stringValidation($order->shipping_state);
+            $country   = self::stringValidation($order->shipping_country);
+            $postal    = self::postCodeValidation($order->shipping_postcode);
 
 
             $shipping_contact = array(
@@ -250,11 +263,10 @@ function ckpg_getRequestData($order)
         );
 
         //PARAMS VALIDATION
-        $token                = ((string) $_POST['conekta_token'] == true)    ? sanitize_text_field($_POST['conekta_token']) : null ;
-        $monthly_installments = is_numeric($_POST['monthly_installments'])    ? intval($_POST['monthly_installments'])       : 1 ;
-        $amount               = is_numeric($order->get_total())               ? (float) $order->get_total() * 100            : null ;
-        $currency             = ((string) get_woocommerce_currency() == true) ? strtolower(get_woocommerce_currency())       : 'mxn';
-
+        $token                = self::stringValidation($_POST['conekta_token']);
+        $monthly_installments = self::intValidation($_POST['monthly_installments']);
+        $amount               = self::validateTotal($order->get_total());
+        $currency             = get_woocommerce_currency();
 
         $data = array(
             'order_id'             => $order->id,
@@ -285,4 +297,46 @@ function ckpg_getRequestData($order)
     }
 
     return false;
+}
+public static function amountValidation($amount='')
+{
+    if(is_numeric($amount)){
+     $amount = (float) $amount * 100;
+    }
+    return $amount;
+}
+public static function itemNameValidation($item='')
+{
+    if((string) $item == true){
+      return sanitize_text_field($item);   
+    } 
+    return $item;
+}
+public static function stringValidation($string='')
+{
+    if((string) $string == true ){
+        return  esc_html($string);
+    }   
+    return $string;
+}
+public static function postCodeValidation($postCode='')
+{
+    if(strlen($$postCode) > 5){
+        return substr($postCode,0, 5);       
+    }   
+    return $postCode;
+}
+public static function intValidation($inputField)
+{
+    if(is_numeric($inputField){
+        return intval($inputField);
+    }
+    return $inputField;
+}
+public static function validateTotal($total='')
+{
+    if(is_numeric($total)){
+        return (float) $total * 100;
+    }
+    return total;
 }
