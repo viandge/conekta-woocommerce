@@ -17,7 +17,7 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
  * Url     : https://www.conekta.io/es/docs/plugins/woocommerce
  */
 
-function conekta_checkout_init_your_gateway()
+function ckpg_conekta_checkout_init_your_gateway()
 {
     if (class_exists('WC_Payment_Gateway'))
     {
@@ -25,8 +25,8 @@ function conekta_checkout_init_your_gateway()
             if (array_key_exists("payment_method", $_POST)) {
                 include_once('conekta_gateway_helper.php');
                 include_once('conekta_plugin.php');
-
-                switch ($_POST["payment_method"]) {
+                $paymentMethod = sanitize_text_field( (string)$_POST["payment_method"]);
+                switch ($paymentMethod) {
                     case 'conektacard': default:
                         include_once('conekta_card_gateway.php');
                     break;
@@ -49,4 +49,4 @@ function conekta_checkout_init_your_gateway()
     }
 }
 
-add_action('plugins_loaded', 'conekta_checkout_init_your_gateway', 0);
+add_action('plugins_loaded', 'ckpg_conekta_checkout_init_your_gateway', 0);
