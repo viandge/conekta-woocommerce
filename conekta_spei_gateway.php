@@ -129,8 +129,8 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
      * Output for the order received page.
      * @param string $order_id
      */
-    function ckpg_thankyou_page($orderId) {
-        $order = new WC_Order( $orderId );
+    function ckpg_thankyou_page($order_id) {
+        $order = new WC_Order( $order_id );
         echo '<p><strong>'.__('Clabe').':</strong> ' . get_post_meta( esc_html($order->id), 'conekta-clabe', true ). '</p>';
         echo '<p><strong>'.esc_html(__('Beneficiario')).':</strong> '.$this->account_owner.'</p>';
         echo '<p><strong>'.esc_html(__('Banco Receptor')).':</strong>  Sistema de Transferencias y Pagos (STP)</p>';
