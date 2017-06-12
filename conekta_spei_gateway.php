@@ -32,6 +32,7 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
         $this->usesandboxapi      = strcmp($this->settings['debug'], 'yes') == 0;
         $this->testApiKey       = $this->settings['test_api_key'  ];
         $this->liveApiKey       = $this->settings['live_api_key'  ];
+        $this->account_owner      = $this->settings['account_owner'];
         $this->secret_key         = $this->usesandboxapi ? $this->testApiKey : $this->liveApiKey;
         add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
         add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'ckpg_thankyou_page' ) );
@@ -86,6 +87,12 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 'description' => __('This controls the title which the user sees during checkout.', 'woothemes'),
                 'default'     => __('Spei Payment', 'woothemes')
             ),
+            'account_owner' => array(
+                'type'        => 'Accnount owner',
+                'title'       => __('Account owner', 'woothemes'),
+                'description' => __('This will be shown in SPEI success page as account description for CLABE reference', 'woothemes'),
+                'default'     => __('Conekta SPEI', 'woothemes')
+            ),
             'test_api_key' => array(
                 'type'        => 'password',
                 'title'       => __('Conekta API Test Private key', 'woothemes'),
@@ -122,9 +129,11 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
      * Output for the order received page.
      * @param string $order_id
      */
-    function ckpg_thankyou_page($order_id) {
-        $order = new WC_Order( $order_id );
+    function ckpg_thankyou_page($orderId) {
+        $order = new WC_Order( $orderId );
         echo '<p><strong>'.__('Clabe').':</strong> ' . get_post_meta( esc_html($order->id), 'conekta-clabe', true ). '</p>';
+        echo '<p><strong>'.esc_html(__('Beneficiario')).':</strong> '.$this->account_owner.'</p>';
+        echo '<p><strong>'.esc_html(__('Banco Receptor')).':</strong>  Sistema de Transferencias y Pagos (STP)</p>';
     }
 
     /**
