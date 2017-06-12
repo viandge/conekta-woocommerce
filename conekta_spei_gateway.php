@@ -88,11 +88,11 @@ class WC_Conekta_Spei_Gateway extends WC_Conekta_Plugin
                 'default'     => __('Spei Payment', 'woothemes')
             ),
             'account_owner' => array(
-                'type'        => 'Accnount owner',
-                'title'       => __('Account owner', 'woothemes'),
-                'description' => __('This will be shown in SPEI success page as account description for CLABE reference', 'woothemes'),
-                'default'     => __('Conekta SPEI', 'woothemes')
-            ),
+                 'type'        => 'Accnount owner',
+                 'title'       => __('Account owner', 'woothemes'),
+                 'description' => __('This will be shown in SPEI success page as account description for CLABE reference', 'woothemes'),
+                 'default'     => __('Conekta SPEI', 'woothemes')
+             ),
             'test_api_key' => array(
                 'type'        => 'password',
                 'title'       => __('Conekta API Test Private key', 'woothemes'),
