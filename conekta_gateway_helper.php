@@ -67,11 +67,11 @@ function ckpg_build_line_items($items, $version)
     foreach ($items as $item) {
 
         $subTotal    = floatval($item['line_subtotal']) * 1000;
-        $subTotal    = $subTotal / floatval($item['qty'];
+        $subTotal    = $subTotal / floatval($item['qty']);
         $productmeta = new WC_Product($item['product_id']);
         $sku         = $productmeta->get_sku();
         $unit_price  = $subTotal;
-        $itemName    = self::itemNameValidation($item['name']);
+        $itemName    = itemNameValidation($item['name']);
         $unitPrice   = intval(round(floatval($unit_price) / 10), 2);
         $quantity    = intval($item['qty']);
 
@@ -204,7 +204,7 @@ function ckpg_getRequestData($order)
         }
         
         //PARAMS VALIDATION
-        $amountShipping = self::amountValidation($order->get_total_shipping());
+        $amountShipping = amountValidation($order->get_total_shipping());
 
         // Shipping Lines
         $shipping_method = $order->get_shipping_method();
@@ -219,14 +219,14 @@ function ckpg_getRequestData($order)
 
 
             //PARAM VALIDATION
-            $name      = self::stringValidation($order->shipping_first_name);
-            $last      = self::stringValidation($order->shipping_last_name);
-            $address1  = self::stringValidation($order->shipping_address_1);
-            $address2  = self::stringValidation($order->shipping_address_2);
-            $city      = self::stringValidation($order->shipping_city);
-            $state     = self::stringValidation($order->shipping_state);
-            $country   = self::stringValidation($order->shipping_country);
-            $postal    = self::postCodeValidation($order->shipping_postcode);
+            $name      = stringValidation($order->shipping_first_name);
+            $last      = stringValidation($order->shipping_last_name);
+            $address1  = stringValidation($order->shipping_address_1);
+            $address2  = stringValidation($order->shipping_address_2);
+            $city      = stringValidation($order->shipping_city);
+            $state     = stringValidation($order->shipping_state);
+            $country   = stringValidation($order->shipping_country);
+            $postal    = postCodeValidation($order->shipping_postcode);
 
 
             $shipping_contact = array(
@@ -263,9 +263,9 @@ function ckpg_getRequestData($order)
         );
 
         //PARAMS VALIDATION
-        $token                = self::stringValidation($_POST['conekta_token']);
-        $monthly_installments = self::intValidation($_POST['monthly_installments']);
-        $amount               = self::validateTotal($order->get_total());
+        $token                = stringValidation($_POST['conekta_token']);
+        $monthly_installments = intValidation($_POST['monthly_installments']);
+        $amount               = validateTotal($order->get_total());
         $currency             = get_woocommerce_currency();
 
         $data = array(
@@ -298,42 +298,42 @@ function ckpg_getRequestData($order)
 
     return false;
 }
-public static function amountValidation($amount='')
+function amountValidation($amount='')
 {
     if(is_numeric($amount)){
      $amount = (float) $amount * 100;
     }
     return $amount;
 }
-public static function itemNameValidation($item='')
+function itemNameValidation($item='')
 {
     if((string) $item == true){
       return sanitize_text_field($item);   
     } 
     return $item;
 }
-public static function stringValidation($string='')
+function stringValidation($string='')
 {
     if((string) $string == true ){
         return  esc_html($string);
     }   
     return $string;
 }
-public static function postCodeValidation($postCode='')
+function postCodeValidation($postCode='')
 {
     if(strlen($$postCode) > 5){
         return substr($postCode,0, 5);       
     }   
     return $postCode;
 }
-public static function intValidation($inputField)
+function intValidation($inputField)
 {
-    if(is_numeric($inputField){
+    if(is_numeric($inputField)){
         return intval($inputField);
     }
     return $inputField;
 }
-public static function validateTotal($total='')
+function validateTotal($total='')
 {
     if(is_numeric($total)){
         return (float) $total * 100;
