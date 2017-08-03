@@ -55,7 +55,7 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
    		$body_message = "<p style=\"margin:0 0 16px\">Se ha detectado el pago del siguiente pedido:</p><br />" . $this->ckpg_assemble_email_payment($order);
       	
       	// Email for customer
-      	$customer = esc_htlml($customer);
+      	$customer = esc_html($customer);
       	$customer = sanitize_text_field($customer);
 
       	$mail_customer = $woocommerce->mailer();
