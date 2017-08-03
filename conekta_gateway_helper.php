@@ -259,7 +259,7 @@ function ckpg_getRequestData($order)
         $customer_info = array(
             'name'  => $customer_name,
             'phone' => $phone,
-            'email' => $order->email
+            'email' => $order->billing_email
         );
 
         //PARAMS VALIDATION
