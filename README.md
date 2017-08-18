@@ -1,4 +1,4 @@
-Conekta Woocommerce v.1.0.0
+Conekta Woocommerce v.1.0.0 Beta
 =======================
 
 WooCommerce Payment Gateway for Conekta.io
@@ -25,7 +25,7 @@ Current version features:
 
 Version Compatibility
 ---------------------
-This plugin has been tested on Wordpress 4.5.3  WooCommerce 2.6.1
+This plugin has been tested on Wordpress 4.8.1  WooCommerce 3.1.2
 
 Installation
 -----------
