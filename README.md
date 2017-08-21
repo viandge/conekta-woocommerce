@@ -14,7 +14,7 @@ Current version features:
 * Credit and Debit Card implemented
 * Cash payments implemented
 
-![alt tag](https://raw.github.com/conekta/conekta-woocommerce/master/readme_files/form.png)
+![alt tag](https://raw.github.com/conekta/conekta-woocommerce/master/readme_files/admin_card.png)
 
 * Sandbox testing capability.
 * Automatic order status management
@@ -40,7 +40,7 @@ Method 2:
 
 * Add your API keys in Woocommerce > Settings > Checkout from your Conekta account (admin.conekta.io) in https://admin.conekta.io#developers.keys
 
-![alt tag](https://raw.github.com/conekta/conekta-woocommerce/master/readme_files/admin_card.png)
+![alt tag](https://raw.github.com/conekta/conekta-woocommerce/master/readme_files/form.png)
 
 * To manage orders for offline payments so that the status changes dynamically, you will need to add the following url as a webhook in your Conekta account:
 http://tusitio.com/wc-api/WC_Conekta_Cash_Gateway
