@@ -78,7 +78,7 @@ class WC_Conekta_Plugin extends WC_Payment_Gateway
     private function ckpg_assemble_email_payment($order){
     	ob_start();
 
-    	wc_get_template( 'emails/email-order-details.php', array( 'order' => esc_htlml($order), 'sent_to_admin' => false, 'plain_text' => false, 'email' => '' ) );
+    	wc_get_template( 'emails/email-order-details.php', array( 'order' => esc_html($order), 'sent_to_admin' => false, 'plain_text' => false, 'email' => '' ) );
 
 		return ob_get_clean();
     }
